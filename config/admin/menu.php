@@ -20,7 +20,7 @@ return
                     [
                         "label"     => \Yii::t('app',"Agents"),
                         "url"       => ["cmsAgent/admin-cms-agent"],
-                        "img"       => ['\skeeks\cms\modules\admin\assets\AdminAsset', 'icons/clock.png'],
+                        "img"       => ['skeeks\cms\agent\assets\CmsAgentAsset', 'icons/clock.png'],
                     ],
                 ],
             ],

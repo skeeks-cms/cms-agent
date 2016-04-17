@@ -7,6 +7,7 @@
  */
 namespace skeeks\cms\agent\console\controllers;
 use skeeks\cms\agent\models\CmsAgent;
+use yii\console\Controller;
 
 /**
  * Class ExecuteController
