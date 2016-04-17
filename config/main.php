@@ -6,11 +6,8 @@ return [
     'components' =>
     [
         'cmsAgent' => [
-            'class'     => 'skeeks\cms\agent\CmsAgentComponent',
-            'onHits'    =>
-            [
-                'enabled' => true
-            ]
+            'class'             => 'skeeks\cms\agent\CmsAgentComponent',
+            'onHitsEnabled'     => true
         ],
 
         'i18n' => [
