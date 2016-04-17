@@ -7,16 +7,15 @@
  */
 namespace skeeks\cms\agent\controllers;
 
+use skeeks\cms\agent\models\CmsAgent;
 use skeeks\cms\components\Cms;
-use skeeks\cms\models\CmsAgent;
-use skeeks\cms\models\CmsContent;
 use skeeks\cms\modules\admin\actions\modelEditor\AdminMultiModelEditAction;
 use skeeks\cms\modules\admin\controllers\AdminModelEditorController;
 use skeeks\cms\modules\admin\traits\AdminModelEditorStandartControllerTrait;
 use yii\helpers\ArrayHelper;
 
 /**
- * Class AdminCmsContentController
+ * Class AdminCmsAgentController
  * @package skeeks\cms\controllers
  */
 class AdminCmsAgentController extends AdminModelEditorController
