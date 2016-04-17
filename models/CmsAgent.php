@@ -76,16 +76,16 @@ class CmsAgent extends ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => Yii::t('app', 'ID'),
-            'last_exec_at' => Yii::t('app', 'Last Execution At'),
-            'next_exec_at' => Yii::t('app', 'Next Execution At'),
-            'name' => Yii::t('app', "Agent's Function"),
-            'agent_interval' => Yii::t('app', 'Interval (sec)'),
-            'priority' => Yii::t('app', 'Priority'),
-            'active' => Yii::t('app', 'Active'),
-            'is_period' => Yii::t('app', 'Periodic'),
-            'is_running' => Yii::t('app', 'Is Running'),
-            'description' => Yii::t('app', 'Description'),
+            'id' => Yii::t('skeeks/agent', 'ID'),
+            'last_exec_at' => Yii::t('skeeks/agent', 'Last Execution At'),
+            'next_exec_at' => Yii::t('skeeks/agent', 'Next Execution At'),
+            'name' => Yii::t('skeeks/agent', "Agent's Function"),
+            'agent_interval' => Yii::t('skeeks/agent', 'Interval (sec)'),
+            'priority' => Yii::t('skeeks/agent', 'Priority'),
+            'active' => Yii::t('skeeks/agent', 'Active'),
+            'is_period' => Yii::t('skeeks/agent', 'Periodic'),
+            'is_running' => Yii::t('skeeks/agent', 'Is Running'),
+            'description' => Yii::t('skeeks/agent', 'Description'),
         ];
     }
 
