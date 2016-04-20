@@ -58,14 +58,18 @@ class CmsAgent extends ActiveRecord
             [['active', 'is_period', 'is_running'], 'string', 'max' => 1],
             [['active', 'is_period', 'is_running'], 'in', 'range' => array_keys(Yii::$app->cms->booleanFormat())],
 
-            [['active'], 'default', 'value' => Cms::BOOL_Y],
-            [['is_period'], 'default', 'value' => Cms::BOOL_Y],
-            [['is_running'], 'default', 'value' => Cms::BOOL_N],
+            [['active'], 'default', 'value' => 'Y'],
+            [['is_period'], 'default', 'value' => 'N'],
+            [['is_running'], 'default', 'value' => 'N'],
             [['agent_interval'], 'default', 'value' => 86400],
             [['priority'], 'default', 'value' => 100],
             [['next_exec_at'], 'default', 'value' => function(self $model)
             {
                 return \Yii::$app->formatter->asTimestamp(time()) + (int) $model->agent_interval;
+            }],
+            [['last_exec_at'], 'default', 'value' => function(self $model)
+            {
+                return \Yii::$app->formatter->asTimestamp(time());
             }],
         ];
     }

@@ -2,7 +2,7 @@
 /**
  * @author Semenov Alexander <semenov@skeeks.com>
  * @link http://skeeks.com/
- * @copyright 2010 SkeekS (ÑêèêÑ)
+ * @copyright 2010 SkeekS (Ð¡ÐºÐ¸ÐºÐ¡)
  * @date 17.04.2016
  */
 namespace skeeks\cms\agent\console\controllers;
@@ -21,11 +21,11 @@ class ExecuteController extends Controller
     public function actionIndex()
     {
         /**
-         * Ïîèñê àãåíòîâ ê âûïîëíåíèþ
+         * ÐŸÐ¾Ð¸ÑÐº Ð°Ð³ÐµÐ½Ñ‚Ð¾Ð² Ðº Ð²Ñ‹Ð¿Ð¾Ð»Ð½ÐµÐ½Ð¸ÑŽ
          */
         $agents = CmsAgent::findForExecute()->all();
 
-        \Yii::info('Agents execute: ' . count($agents), CmsAgent::className());
+        \Yii::info('Agents execute: ' . count($agents), 'skeeks/agent');
 
         if ($agents)
         {

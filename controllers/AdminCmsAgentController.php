@@ -9,6 +9,7 @@ namespace skeeks\cms\agent\controllers;
 
 use skeeks\cms\agent\models\CmsAgent;
 use skeeks\cms\components\Cms;
+use skeeks\cms\helpers\RequestResponse;
 use skeeks\cms\modules\admin\actions\modelEditor\AdminMultiModelEditAction;
 use skeeks\cms\modules\admin\controllers\AdminModelEditorController;
 use skeeks\cms\modules\admin\traits\AdminModelEditorStandartControllerTrait;
@@ -38,34 +39,6 @@ class AdminCmsAgentController extends AdminModelEditorController
     {
         return ArrayHelper::merge(parent::actions(),
             [
-                'index' =>
-                [
-                    "columns"      => [
-                        'id',
-                        'name',
-                        'description',
-
-                        [
-                            'class'         => \skeeks\cms\grid\DateTimeColumnData::className(),
-                            'attribute'     => "last_exec_at"
-                        ],
-
-                        [
-                            'class'         => \skeeks\cms\grid\DateTimeColumnData::className(),
-                            'attribute'     => "next_exec_at"
-                        ],
-
-                        [
-                            'attribute'     => "agent_interval"
-                        ],
-
-                        [
-                            'class'         => \skeeks\cms\grid\BooleanColumn::className(),
-                            'attribute'     => "active"
-                        ],
-                    ],
-                ],
-
                 "activate-multi" =>
                 [
                     'class'             => AdminMultiModelEditAction::className(),
@@ -85,4 +58,15 @@ class AdminCmsAgentController extends AdminModelEditorController
         );
     }
 
+    public function actionLoad()
+    {
+        $rr = new RequestResponse();
+        if ($rr->isRequestAjaxPost())
+        {
+            \Yii::$app->cmsAgent->loadAgents();
+            $rr->message = \Yii::t('skeks/agent', 'Agents have been updated successfully');
+            $rr->success = true;
+            return $rr;
+        }
+    }
 }
