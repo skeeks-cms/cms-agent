@@ -10,7 +10,7 @@ use common\models\User;
 
 <?php $form = ActiveForm::begin(); ?>
 
-<?= $form->fieldSet('Основное'); ?>
+<?= $form->fieldSet(Yii::t('skeeks/agent', 'Main')); ?>
 
     <?= $form->field($model, 'next_exec_at')->widget(
         \kartik\datecontrol\DateControl::classname(), [
