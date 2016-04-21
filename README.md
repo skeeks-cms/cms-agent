@@ -55,6 +55,32 @@ Configuration app
 
 ```
 
+How to enable execution on cron agents
+----------------
+
+### Configuration app
+
+```php
+
+'components' =>
+[
+    'cmsAgent' => [
+        'class'             => 'skeeks\cms\agent\CmsAgentComponent',
+        'onHitsEnabled'     => false
+    ],
+]
+
+```
+
+### Cront task
+
+```bash
+* * * * * cd /var/www/sites/you-site.com/ && php yii cmsAgent/execute
+```
+
+
+
+
 ##Links
 * [Web site](http://en.cms.skeeks.com)
 * [Web site (rus)](http://cms.skeeks.com)
