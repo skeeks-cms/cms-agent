@@ -18,7 +18,7 @@ return
                 'items' =>
                 [
                     [
-                        "label"     => \Yii::t('app',"Agents"),
+                        "label"     => \Yii::t('skeeks/agent',"Agents"),
                         "url"       => ["cmsAgent/admin-cms-agent"],
                         "img"       => ['skeeks\cms\agent\assets\CmsAgentAsset', 'icons/clock.png'],
                     ],
