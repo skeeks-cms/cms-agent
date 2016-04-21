@@ -6,6 +6,7 @@ return [
     'Executing' => 'Исполнение',
     'Agents enabled on the hits' => 'Включено исполнение агентов на хитах',
     "Last Execution At"     => "Дата последнего запуска",
+    "Main"     => "Основное",
     "Next Execution At"     => "Дата и время следующего запуска",
     "Agent's Function"      => "Функция агента",
     "Interval (sec)"        => "Интервал (сек.)",
