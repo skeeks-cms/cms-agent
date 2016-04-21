@@ -68,7 +68,7 @@ $this->registerCss(<<<CSS
 .sx-legend
 {
     font-size: 16px;
-    margin-left: 50px;
+    margin-left: 20px;
 }
 .sx-orange
 {
