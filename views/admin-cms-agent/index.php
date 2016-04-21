@@ -64,16 +64,33 @@ $backend = \yii\helpers\Url::to(['load']);
 })(sx, sx.$, sx._);
 JS
 );
-
+$this->registerCss(<<<CSS
+.sx-legend
+{
+    font-size: 16px;
+    margin-left: 50px;
+}
+.sx-orange
+{
+    color: orange;
+    font-weight: bold;
+}
+.sx-green
+{
+    color: green;
+    font-weight: bold;
+}
+CSS
+);
     ?>
 
     <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-retweet\"></i> ". \Yii::t('skeeks/agent', 'Find and download of files'), "#", [
         'class'         => 'btn btn-primary sx-btn-make',
     ]); ?>
-
-    <?= \Yii::t('skeeks/agent', 'Files with agents'); ?> <?= count(\Yii::$app->cmsAgent->agentsConfigFiles); ?>
-    | <?= \Yii::t('skeeks/agent', 'Found agents'); ?> <?= count(\Yii::$app->cmsAgent->agentsConfig); ?>
-
+    <span class="sx-legend">
+        <?= \Yii::t('skeeks/agent', 'Files with agents'); ?> <span class="sx-orange"><?= count(\Yii::$app->cmsAgent->agentsConfigFiles); ?></span>
+        | <?= \Yii::t('skeeks/agent', 'Found agents'); ?> <span class="sx-green"><?= count(\Yii::$app->cmsAgent->agentsConfig); ?></span>
+    </span>
 
 
     <br />
