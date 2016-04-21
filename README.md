@@ -58,7 +58,7 @@ Configuration app
 How to enable execution on cron agents
 ----------------
 
-### Configuration app
+#### Configuration app
 
 ```php
 
@@ -72,7 +72,7 @@ How to enable execution on cron agents
 
 ```
 
-### Cront task
+#### Cront task
 
 ```bash
 * * * * * cd /var/www/sites/you-site.com/ && php yii cmsAgent/execute
