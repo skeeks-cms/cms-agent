@@ -17,6 +17,7 @@ return [
     "Find and download of files"              => "Найти и загрузить из файлов",
     "Files with agents"              => "Файлов с агентами",
     "Found agents"              => "Найдено агентов",
+    "Is Running"              => "Запущен",
     "Agents have been updated successfully"              => "Агенты успешно обновлены",
     "Attention! You use agents mechanism hits users. If possible, switch them on cron."              => "Внимание! Вы используете механизм агентов на хитах пользователей. По-возможности переключите их на крон.",
 ];

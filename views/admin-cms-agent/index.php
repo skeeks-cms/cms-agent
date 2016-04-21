@@ -102,7 +102,7 @@ CSS
     'adminController'       => $controller,
 
     "columns"      => [
-        'id',
+        'is_running',
         'name',
         'description',
 
