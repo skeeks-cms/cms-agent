@@ -107,35 +107,8 @@ class CmsAgent extends ActiveRecord
             ])
             ->andWhere([
                 '<=', 'next_exec_at', \Yii::$app->formatter->asTimestamp(time())
-            ])
+            ])->orderBy('priority')
         ;
     }
 
-
-    /**
-     * Выполнить агента
-     *
-     * @return $this
-     */
-    public function execute()
-    {
-        //Если уже запщен, то не будем запускать еще раз.
-        if ($this->is_running == Cms::BOOL_Y)
-        {
-            return $this;
-        }
-
-        //Перед выполнением отмечаем что он сейчас выполняется.
-        $this->is_running = Cms::BOOL_Y;
-        $this->save();
-
-        \Yii::$app->console->execute("cd " . ROOT_DIR . "; php yii " . $this->name);
-
-        $this->is_running   = Cms::BOOL_N;
-        $this->next_exec_at = \Yii::$app->formatter->asTimestamp(time()) + (int) $this->agent_interval;
-        $this->last_exec_at = \Yii::$app->formatter->asTimestamp(time());
-        $this->save();
-
-        return $this;
-    }
 }

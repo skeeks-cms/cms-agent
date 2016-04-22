@@ -102,7 +102,22 @@ CSS
     'adminController'       => $controller,
 
     "columns"      => [
-        'is_running',
+        [
+            'attribute' => 'is_running',
+            'filter' => \Yii::$app->cms->booleanFormat(),
+            'format' => 'raw',
+            'value' => function(\skeeks\cms\agent\models\CmsAgent $cmsAgent)
+            {
+                if ($cmsAgent->is_running == 'Y')
+                {
+                    return \yii\helpers\Html::img(\skeeks\cms\logDbTarget\assets\LogDbTargetAsset::getAssetUrl('loaders/circle-blue.gif'), [
+                        'height' => '30'
+                    ]);
+                }
+
+                return "-";
+            },
+        ],
         'name',
         'description',
 
@@ -138,6 +153,17 @@ CSS
 
         <?= \Yii::t('skeeks/agent', 'Attention! You use agents mechanism hits users. If possible, switch them on cron.'); ?>
 
+    <? \yii\bootstrap\Alert::end(); ?>
+<? else: ?>
+    <? \yii\bootstrap\Alert::begin([
+        'options' => [
+            'class' => 'alert-success',
+        ],
+    ])?>
+
+        <?= \Yii::t('skeeks/agent', 'In the project settings specified that you are using a mechanism on the crown agents. If the agents do not work, check the entry in the file cron'); ?>
+        <br />
+        <b>* * * * * cd <?= ROOT_DIR; ?> && php yii cmsAgent/execute</b>
     <? \yii\bootstrap\Alert::end(); ?>
 <? endif; ?>
 
