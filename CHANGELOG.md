@@ -1,7 +1,7 @@
 CHANGELOG
 ==============
 
-1.0.0-rc1.pre
+1.0.0-rc1
 -----------------
   * Added migration field have been changed TEXT on the field LONGTEXT
   * Changed login process
