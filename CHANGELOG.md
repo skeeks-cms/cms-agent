@@ -3,6 +3,7 @@ CHANGELOG
 
 1.0.0-rc2
 -----------------
+  * Automatic updating of the table with the agents
   * Fixed an issue with copying large data
   * Fixed a problem with the launch of many agents
 

@@ -12,9 +12,35 @@
 
 $backend = \yii\helpers\Url::to(['load']);
 
+$this->registerJs(<<<JS
+(function(sx, $, _)
+{
+    sx.classes.Updater = sx.classes.Component.extend({
+
+        _init: function()
+        {
+            setInterval(function()
+            {
+                $.pjax.reload('#sx-agents', {});
+            }, 15000);
+        }
+    });
+
+    new sx.classes.Updater();
+})(sx, sx.$, sx._);
+
+
+
+JS
+);
+
 ?>
 
-<div id="sx-agents">
+
+<? \skeeks\cms\modules\admin\widgets\Pjax::begin([
+    'id' => 'sx-agents'
+]); ?>
+
     <?
 
 
@@ -142,7 +168,8 @@ CSS
     ],
 ]); ?>
 
-</div>
+
+<? \skeeks\cms\modules\admin\widgets\Pjax::end(); ?>
 
 <? if (\Yii::$app->cmsAgent->onHitsEnabled) : ?>
     <? \yii\bootstrap\Alert::begin([
