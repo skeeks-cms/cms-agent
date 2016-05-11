@@ -95,6 +95,59 @@ class CmsAgent extends ActiveRecord
 
 
     /**
+     * @return bool
+     */
+    public function stop()
+    {
+        $this->is_running   = Cms::BOOL_N;
+        $this->next_exec_at = \Yii::$app->formatter->asTimestamp(time()) + (int) $this->agent_interval;
+        $this->last_exec_at = \Yii::$app->formatter->asTimestamp(time());
+        return $this->save();
+    }
+
+    /**
+     * Stop long executable agents
+     *
+     * @return int
+     */
+    static public function stopLongExecutable()
+    {
+        $time = \Yii::$app->formatter->asTimestamp(time()) - (int) \Yii::$app->cmsAgent->agentMaxExecuteTime;
+
+        $running = static::find()
+            ->where([
+                'is_running' => Cms::BOOL_Y
+            ])
+            ->orderBy('priority')
+            ->all();
+        ;
+
+        $stoping = 0;
+
+        if ($running)
+        {
+            /**
+             * @var $agent CmsAgent
+             */
+            foreach ($running as $agent)
+            {
+                if ($agent->next_exec_at <= $time)
+                {
+                    if ($agent->stop())
+                    {
+                        $stoping ++;
+                    } else
+                    {
+                        \Yii::error('Not stopped long agent: ' . $agent->name, 'skeeks/agent');
+                    }
+                }
+            }
+        }
+
+        return $stoping;
+    }
+
+    /**
      * Агенты к выполнению
      *
      * @return ActiveQuery

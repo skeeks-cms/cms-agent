@@ -1,6 +1,11 @@
 CHANGELOG
 ==============
 
+1.0.0-rc2
+-----------------
+  * Fixed an issue with copying large data
+  * Fixed a problem with the launch of many agents
+
 1.0.0-rc1
 -----------------
   * Added migration field have been changed TEXT on the field LONGTEXT

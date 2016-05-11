@@ -8,6 +8,7 @@
 namespace skeeks\cms\agent\console\controllers;
 use skeeks\cms\agent\models\CmsAgent;
 use skeeks\cms\components\Cms;
+use skeeks\cms\helpers\StringHelper;
 use yii\console\Controller;
 use yii\helpers\Console;
 
@@ -22,6 +23,12 @@ class ExecuteController extends Controller
      */
     public function actionIndex()
     {
+        $stoppedLong = CmsAgent::stopLongExecutable();
+        if ($stoppedLong > 0)
+        {
+            \Yii::warning('Agents stopped: ' . count($stoppedLong), 'skeeks/agent');
+        }
+
         $agents = CmsAgent::findForExecute()->all();
 
         \Yii::info('Agents execute: ' . count($agents), 'skeeks/agent::total');
@@ -44,11 +51,7 @@ class ExecuteController extends Controller
      */
     protected function _executeAgent(CmsAgent $cmsAgent)
     {
-        function microtime_float()
-        {
-            list($usec, $sec) = explode(" ", microtime());
-            return ((float)$usec + (float)$sec);
-        }
+
 
         //Если уже запщен, то не будем запускать еще раз.
         if ($cmsAgent->is_running == Cms::BOOL_Y)
@@ -61,26 +64,51 @@ class ExecuteController extends Controller
         $cmsAgent->is_running = Cms::BOOL_Y;
         $cmsAgent->save();
 
-        $time_start = microtime_float();
+        $timeStart = $this->_microtimeFloat();
 
         $this->stdout("------------------------------\n");
         $this->stdout(" > {$cmsAgent->name}\n");
         $result = \Yii::$app->console->execute("cd " . ROOT_DIR . "; php yii " . $cmsAgent->name);
         $this->stdout( $result . "\n");
 
-        $time_end = microtime_float();
-        $time = $time_end - $time_start;
+        $time = $this->_microtimeFloat() - $timeStart;
 
         $this->stdout("Lead time > {$time} sec\n");
         $this->stdout("------------------------------\n");
 
+        $result = $this->_getShortResultContent($result);
+
         \Yii::info("Execute agent > {$cmsAgent->name}\n{$result}\nLead time > {$time} sec", 'skeeks/agent::' . $cmsAgent->name);
 
-        $cmsAgent->is_running   = Cms::BOOL_N;
-        $cmsAgent->next_exec_at = \Yii::$app->formatter->asTimestamp(time()) + (int) $cmsAgent->agent_interval;
-        $cmsAgent->last_exec_at = \Yii::$app->formatter->asTimestamp(time());
-        $cmsAgent->save();
+        $cmsAgent->stop();
 
         return $this;
+    }
+
+    /**
+     * @param string $result
+     * @return string
+     */
+    protected function _getShortResultContent($result = '')
+    {
+        if (StringHelper::strlen($result) > 10000)
+        {
+            $totalLenght = StringHelper::strlen($result);
+            $newResult = '';
+            $newResult .= StringHelper::substr($result, 0, 5000);
+            $newResult .= "\n\n..............\n\n........ Total lenght: {$totalLenght}  ........\n\n..............\n\n";
+            $newResult .= StringHelper::substr($result, ($totalLenght - 3000), $totalLenght);
+
+            return $newResult;
+        } else
+        {
+            return $result;
+        }
+    }
+
+    protected function _microtimeFloat()
+    {
+        list($usec, $sec) = explode(" ", microtime());
+        return ((float)$usec + (float)$sec);
     }
 }
