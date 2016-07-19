@@ -136,7 +136,7 @@ CSS
             {
                 if ($cmsAgent->is_running == 'Y')
                 {
-                    return \yii\helpers\Html::img(\skeeks\cms\logDbTarget\assets\LogDbTargetAsset::getAssetUrl('loaders/circle-blue.gif'), [
+                    return \yii\helpers\Html::img(\skeeks\cms\agent\assets\CmsAgentAsset::getAssetUrl('loaders/loader.svg'), [
                         'height' => '30'
                     ]);
                 }

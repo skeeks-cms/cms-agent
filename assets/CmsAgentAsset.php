@@ -6,7 +6,7 @@
  * @date 15.04.2016
  */
 namespace skeeks\cms\agent\assets;
-use yii\web\AssetBundle;
+use skeeks\cms\base\AssetBundle;
 
 /**
  * Class CmsAgentAsset
@@ -15,4 +15,6 @@ use yii\web\AssetBundle;
 class CmsAgentAsset extends AssetBundle
 {
     public $sourcePath = '@skeeks/cms/agent/assets';
+
+
 }
