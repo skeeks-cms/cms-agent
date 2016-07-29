@@ -110,9 +110,14 @@ class CmsAgent extends ActiveRecord
      *
      * @return int
      */
-    static public function stopLongExecutable()
+    static public function stopLongExecutable($agentMaxExecuteTime = null)
     {
-        $time = \Yii::$app->formatter->asTimestamp(time()) - (int) \Yii::$app->cmsAgent->agentMaxExecuteTime;
+        if ($agentMaxExecuteTime === null)
+        {
+            $agentMaxExecuteTime = \Yii::$app->cmsAgent->agentMaxExecuteTime;
+        }
+
+        $time = \Yii::$app->formatter->asTimestamp(time()) - (int) $agentMaxExecuteTime;
 
         $running = static::find()
             ->where([

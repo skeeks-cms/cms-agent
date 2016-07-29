@@ -11,6 +11,7 @@
 /* @var $model \skeeks\cms\models\CmsContentElement */
 
 $backend = \yii\helpers\Url::to(['load']);
+$backendStop = \yii\helpers\Url::to(['stop-executable']);
 
 $this->registerJs(<<<JS
 (function(sx, $, _)
@@ -59,6 +60,12 @@ JS
                 self.make();
                 return false;
             });
+
+            $(".sx-btn-stop-executable").on('click', function()
+            {
+                self.stop();
+                return false;
+            });
         },
 
         make: function()
@@ -79,12 +86,33 @@ JS
             });
 
             ajax.execute();
+        },
+
+        stop: function()
+        {
+            var ajax = sx.ajax.preparePostQuery(this.get("backendStop"));
+            var rr = new sx.classes.AjaxHandlerStandartRespose(ajax);
+
+            rr.bind('error', function(e, data)
+            {
+                $.pjax.reload('#sx-agents', {});
+                return false;
+            });
+
+            rr.bind('success', function(e, data)
+            {
+                $.pjax.reload('#sx-agents', {});
+                return false;
+            });
+
+            ajax.execute();
         }
     });
 
 
     new sx.classes.LoadAgents({
-        'backend' : '{$backend}'
+        'backend' : '{$backend}',
+        'backendStop' : '{$backendStop}'
     });
 
 })(sx, sx.$, sx._);
@@ -110,16 +138,28 @@ CSS
 );
     ?>
 
-    <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-retweet\"></i> ". \Yii::t('skeeks/agent', 'Find and download of files'), "#", [
-        'class'         => 'btn btn-primary sx-btn-make',
-    ]); ?>
-    <span class="sx-legend">
-        <?= \Yii::t('skeeks/agent', 'Files with agents'); ?> <span class="sx-orange"><?= count(\Yii::$app->cmsAgent->agentsConfigFiles); ?></span>
-        | <?= \Yii::t('skeeks/agent', 'Found agents'); ?> <span class="sx-green"><?= count(\Yii::$app->cmsAgent->agentsConfig); ?></span>
-    </span>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="pull-left">
+            <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-stop\"></i> ". \Yii::t('skeeks/agent', 'Stop running'), "#", [
+                'class'         => 'btn btn-primary sx-btn-stop-executable',
+            ]); ?>
+            </div>
 
 
-    <br />
+            <div class="pull-right">
+                <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-retweet\"></i> ". \Yii::t('skeeks/agent', 'Find and download of files'), "#", [
+                    'class'         => 'btn btn-primary sx-btn-make',
+                ]); ?>
+                <span class="sx-legend">
+                    <?= \Yii::t('skeeks/agent', 'Files with agents'); ?> <span class="sx-orange"><?= count(\Yii::$app->cmsAgent->agentsConfigFiles); ?></span>
+                    | <?= \Yii::t('skeeks/agent', 'Found agents'); ?> <span class="sx-green"><?= count(\Yii::$app->cmsAgent->agentsConfig); ?></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
     <br />
 
 <?= \skeeks\cms\modules\admin\widgets\GridViewStandart::widget([

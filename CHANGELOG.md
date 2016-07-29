@@ -1,6 +1,11 @@
 CHANGELOG
 ==============
 
+1.0.1
+-----------------
+  * Added the ability to stop the forced running agents
+  * Fixed some translation
+
 1.0.0.2
 -----------------
   * Fixed image loader

@@ -21,4 +21,6 @@ return [
     "Agents have been updated successfully"              => "Агенты успешно обновлены",
     "Attention! You use agents mechanism hits users. If possible, switch them on cron."              => "Внимание! Вы используете механизм агентов на хитах пользователей. По-возможности переключите их на крон.",
     "In the project settings specified that you are using a mechanism on the crown agents. If the agents do not work, check the entry in the file cron" => "В настройках проекта указано что вы используете механизм агентов на кроне. Если агенты не работают, проверьте наличие запись в крон файле",
+    "Running agents stopped" => "Запущенные агенты остановлены",
+    "Stop running" => "Остановить запущенные",
 ];

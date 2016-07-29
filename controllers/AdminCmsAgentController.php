@@ -58,13 +58,33 @@ class AdminCmsAgentController extends AdminModelEditorController
         );
     }
 
+    /**
+     * Загрузка агентов из файла
+     * @return RequestResponse
+     */
     public function actionLoad()
     {
         $rr = new RequestResponse();
         if ($rr->isRequestAjaxPost())
         {
             \Yii::$app->cmsAgent->loadAgents();
-            $rr->message = \Yii::t('skeks/agent', 'Agents have been updated successfully');
+            $rr->message = \Yii::t('skeeks/agent', 'Agents have been updated successfully');
+            $rr->success = true;
+            return $rr;
+        }
+    }
+
+    /**
+     * Загрузка агентов из файла
+     * @return RequestResponse
+     */
+    public function actionStopExecutable()
+    {
+        $rr = new RequestResponse();
+        if ($rr->isRequestAjaxPost())
+        {
+            $stoppedLong = CmsAgent::stopLongExecutable(0);
+            $rr->message = \Yii::t('skeeks/agent', 'Running agents stopped');
             $rr->success = true;
             return $rr;
         }
