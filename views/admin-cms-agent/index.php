@@ -38,7 +38,7 @@ JS
 ?>
 
 
-<? \skeeks\cms\modules\admin\widgets\Pjax::begin([
+<? $pjax = \skeeks\cms\modules\admin\widgets\Pjax::begin([
     'id' => 'sx-agents'
 ]); ?>
 
@@ -139,6 +139,11 @@ CSS
     ?>
 
 
+    <?php echo $this->render('_search', [
+        'searchModel'   => $searchModel,
+        'dataProvider'  => $dataProvider
+    ]); ?>
+
     <div class="row">
         <div class="col-md-12">
             <div class="pull-left">
@@ -166,6 +171,7 @@ CSS
     'dataProvider'          => $dataProvider,
     'filterModel'           => $searchModel,
     'adminController'       => $controller,
+    'pjax'                  => $pjax,
 
     "columns"      => [
         [

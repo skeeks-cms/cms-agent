@@ -1,6 +1,10 @@
 CHANGELOG
 ==============
 
+1.0.2.pre
+-----------------
+  * Fixed #35 [https://github.com/skeeks-cms/cms/issues/35] (Errors in JavaScript code in the behavior of the widget in the admin table)
+
 1.0.1
 -----------------
   * Added the ability to stop the forced running agents
