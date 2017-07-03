@@ -50,7 +50,7 @@ class AdminCmsAgentController extends AdminModelEditorController
                 "inActivate-multi" =>
                 [
                     'class'             => AdminMultiModelEditAction::className(),
-                    "name"              => \Yii::t('skeeks/agent', 'Activate'),
+                    "name"              => \Yii::t('skeeks/agent', 'Deactivate'),
                     //"icon"              => "glyphicon glyphicon-trash",
                     "eachCallback"      => [$this, 'eachMultiInActivate'],
                 ]
