@@ -2,12 +2,12 @@
 	"name": "skeeks/cms-agent",
 	"description": "Agents for SkeekS CMS",
 	"keywords": ["yii", "skeeks", "framework", "component", "agent"],
-    	"homepage": "http://cms.skeeks.com/",
+    	"homepage": "https://cms.skeeks.com/",
 	"type": "yii2-extension",
 	"license": "GPL-3.0+",
 	"support": {
-        "issues": "http://skeeks.com/",
-        "wiki": "http://en.cms.skeeks.com/docs/",
+        "issues": "https://skeeks.com/",
+        "wiki": "https://cms.skeeks.com/docs/",
         "source": "https://github.com/skeeks-cms/cms-agent"
     },
 	"authors": [
@@ -17,11 +17,17 @@
 		}
 	],
 	"require": {
-		"skeeks/cms": "*"
+		"skeeks/cms": "^4"
 	},
     "autoload": {
         "psr-4": {
-            "skeeks\\cms\\agent\\": ""
+            "skeeks\\cms\\agent\\": "src/"
+        }
+    },
+	"extra": {
+        "config-plugin": {
+            "console": "src/config/main-console.php",
+            "web": "src/config/main.php",
         }
     }
 }
