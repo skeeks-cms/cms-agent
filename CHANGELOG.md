@@ -1,6 +1,10 @@
 CHANGELOG
 ==============
 
+1.3.0
+-----------------
+ * SkeekS CMS ~ 5.0
+ 
 1.2.0
 -----------------
  * Using composer-config-plugin
