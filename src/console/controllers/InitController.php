@@ -24,8 +24,7 @@ class InitController extends Controller
      */
     public function actionIndex()
     {
-        $this->stdout('Agents files: ' . count(\Yii::$app->cmsAgent->agentsConfigFiles) . "\n");
-        $this->stdout('Agents in files: ' . count(\Yii::$app->cmsAgent->agentsConfig) . "\n");
+        $this->stdout('Agent commmands: ' . count(\Yii::$app->cmsAgent->commands) . "\n");
 
         \Yii::$app->cmsAgent->loadAgents();
     }

@@ -30,6 +30,11 @@ class CmsAgent extends Component
     public $interval;
 
     /**
+     * @var boolean
+     */
+    public $is_period = false;
+
+    /**
      * @var string
      */
     protected $_name;
@@ -60,10 +65,12 @@ class CmsAgent extends Component
     {
         if (is_array($name) && count($name) == 2) {
             $this->_name = \Yii::t($name[0], $name[1]);
-        } else if (is_string($name)) {
-            $this->_name = $name;
         } else {
-            throw new \InvalidArgumentException('Property name must be array or string');
+            if (is_string($name)) {
+                $this->_name = $name;
+            } else {
+                throw new \InvalidArgumentException('Property name must be array or string');
+            }
         }
 
         return $this;

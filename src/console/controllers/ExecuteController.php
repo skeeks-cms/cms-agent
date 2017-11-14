@@ -76,7 +76,8 @@ class ExecuteController extends Controller
 
         $result = $this->_getShortResultContent($result);
 
-        \Yii::info("Execute agent > {$cmsAgent->name}\n{$result}\nLead time > {$time} sec", 'skeeks/agent::' . $cmsAgent->name);
+        \Yii::info("Execute agent > {$cmsAgent->name}\n{$result}\nLead time > {$time} sec",
+            'skeeks/agent::' . $cmsAgent->name);
 
         $cmsAgent->stop();
 

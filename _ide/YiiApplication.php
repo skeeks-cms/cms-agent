@@ -8,7 +8,9 @@
  * @copyright 2010 SkeekS (СкикС)
  * @date 10.09.2015
  */
+
 namespace yii\web;
+
 use skeeks\cms\agent\CmsAgentComponent;
 
 /**
@@ -18,4 +20,5 @@ use skeeks\cms\agent\CmsAgentComponent;
  * @package yii\web
  */
 class Application
-{}
+{
+}

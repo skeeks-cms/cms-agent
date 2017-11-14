@@ -64,12 +64,20 @@ class CmsAgentModel extends ActiveRecord
             [['is_running'], 'default', 'value' => 'N'],
             [['agent_interval'], 'default', 'value' => 86400],
             [['priority'], 'default', 'value' => 100],
-            [['next_exec_at'], 'default', 'value' => function (self $model) {
-                return \Yii::$app->formatter->asTimestamp(time()) + (int)$model->agent_interval;
-            }],
-            [['last_exec_at'], 'default', 'value' => function (self $model) {
-                return \Yii::$app->formatter->asTimestamp(time());
-            }],
+            [
+                ['next_exec_at'],
+                'default',
+                'value' => function (self $model) {
+                    return \Yii::$app->formatter->asTimestamp(time()) + (int)$model->agent_interval;
+                }
+            ],
+            [
+                ['last_exec_at'],
+                'default',
+                'value' => function (self $model) {
+                    return \Yii::$app->formatter->asTimestamp(time());
+                }
+            ],
         ];
     }
 
@@ -156,7 +164,9 @@ class CmsAgentModel extends ActiveRecord
                 'is_running' => Cms::BOOL_N
             ])
             ->andWhere([
-                '<=', 'next_exec_at', \Yii::$app->formatter->asTimestamp(time())
+                '<=',
+                'next_exec_at',
+                \Yii::$app->formatter->asTimestamp(time())
             ])->orderBy('priority');
     }
 

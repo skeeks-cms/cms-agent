@@ -67,59 +67,46 @@ class CmsAgentComponent extends Component implements BootstrapInterface
     }
 
     /**
-     * @return array
+     * /**
+     * @return $this
      */
-    public function getAgentsConfig()
+    public function loadAgents()
     {
-        $result = [];
-        foreach ($this->agentsConfigFiles as $filePath) {
-            $fileData = (array)include $filePath;
-            $result = \yii\helpers\ArrayHelper::merge($result, $fileData);
-        }
+        $this->initConfigs();
 
-        return (array)$result;
-    }
+        if ($this->commands) {
+            /**
+             * @var CmsAgent $command
+             */
+            foreach ($this->commands as $command) {
+                if (CmsAgentModel::find()->where(['name' => $command->command])->one()) {
+                    continue;
+                }
 
-    /**
-     * @return array
-     */
-    public function getAgentsConfigFiles()
-    {
-        $files = FileHelper::findExtensionsFiles(['/config/agents.php']);
-        $files = array_unique(array_merge(
-            [
-                \Yii::getAlias('@app/config/agents.php'),
-                \Yii::getAlias('@common/config/agents.php'),
-            ], $files
-        ));
-
-        $result = [];
-        foreach ($files as $file) {
-            if (file_exists($file)) {
-                $result[] = $file;
+                $agent = new CmsAgentModel();
+                $agent->name = $command->command;
+                $agent->agent_interval = $command->interval;
+                $agent->is_period = $command->is_period ? "Y" : "N";
+                $agent->description = $command->name;
+                $agent->save();
             }
         }
 
-        return $result;
+        return $this;
     }
 
     /**
      * @return $this
      */
-    public function loadAgents()
+    public function initConfigs()
     {
-        if ($this->agentsConfig) {
-            foreach ($this->agentsConfig as $exec => $data) {
-                if (CmsAgent::find()->where(['name' => $exec])->one()) {
-                    continue;
+        if ($this->commands) {
+            foreach ($this->commands as $command => $config) {
+                if (is_string($config)) {
+                    $config = ['class' => $config];
                 }
-
-                $agent = new CmsAgent();
-                $agent->name = $exec;
-                $agent->agent_interval = ArrayHelper::getValue($data, 'agent_interval');
-                $agent->is_period = ArrayHelper::getValue($data, 'is_period');
-                $agent->description = ArrayHelper::getValue($data, 'description');
-                $agent->save();
+                $config['command'] = $command;
+                $this->commands[$command] = \Yii::createObject($config);
             }
         }
 

@@ -146,14 +146,16 @@ CSS
 <div class="row">
     <div class="col-md-12">
         <div class="pull-left">
-            <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-stop\"></i> " . \Yii::t('skeeks/agent', 'Stop running'), "#", [
+            <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-stop\"></i> " . \Yii::t('skeeks/agent',
+                    'Stop running'), "#", [
                 'class' => 'btn btn-primary sx-btn-stop-executable',
             ]); ?>
         </div>
 
 
         <div class="pull-right">
-            <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-retweet\"></i> " . \Yii::t('skeeks/agent', 'Find and download of files'), "#", [
+            <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-retweet\"></i> " . \Yii::t('skeeks/agent',
+                    'Find and download of files'), "#", [
                 'class' => 'btn btn-primary sx-btn-make',
             ]); ?>
             <span class="sx-legend">
@@ -181,9 +183,10 @@ CSS
             'format' => 'raw',
             'value' => function (\skeeks\cms\agent\models\CmsAgentModel $cmsAgent) {
                 if ($cmsAgent->is_running == 'Y') {
-                    return \yii\helpers\Html::img(\skeeks\cms\agent\assets\CmsAgentAsset::getAssetUrl('loaders/loader.svg'), [
-                        'height' => '30'
-                    ]);
+                    return \yii\helpers\Html::img(\skeeks\cms\agent\assets\CmsAgentAsset::getAssetUrl('loaders/loader.svg'),
+                        [
+                            'height' => '30'
+                        ]);
                 }
 
                 return "-";
@@ -235,7 +238,8 @@ CSS
         ],
     ]) ?>
 
-    <?= \Yii::t('skeeks/agent', 'In the project settings specified that you are using a mechanism on the crown agents. If the agents do not work, check the entry in the file cron'); ?>
+    <?= \Yii::t('skeeks/agent',
+        'In the project settings specified that you are using a mechanism on the crown agents. If the agents do not work, check the entry in the file cron'); ?>
     <br/>
     <b>* * * * * cd <?= ROOT_DIR; ?> && php yii cmsAgent/execute > /dev/null 2>&1</b>
     <? \yii\bootstrap\Alert::end(); ?>
