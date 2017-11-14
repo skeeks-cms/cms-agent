@@ -1,7 +1,7 @@
 CHANGELOG
 ==============
 
-2.0.0-alpha
+2.0.0-alpha.pre
 -----------------
  * Change configs
  
