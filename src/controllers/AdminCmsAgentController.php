@@ -5,9 +5,10 @@
  * @copyright 2010 SkeekS (СкикС)
  * @date 17.04.2016
  */
+
 namespace skeeks\cms\agent\controllers;
 
-use skeeks\cms\agent\models\CmsAgent;
+use skeeks\cms\agent\models\CmsAgentModel;
 use skeeks\cms\components\Cms;
 use skeeks\cms\helpers\RequestResponse;
 use skeeks\cms\modules\admin\actions\modelEditor\AdminMultiModelEditAction;
@@ -25,9 +26,9 @@ class AdminCmsAgentController extends AdminModelEditorController
 
     public function init()
     {
-        $this->name                     = \Yii::t('skeeks/agent', 'Agents');
-        $this->modelShowAttribute       = "id";
-        $this->modelClassName           = CmsAgent::className();
+        $this->name = \Yii::t('skeeks/agent', 'Agents');
+        $this->modelShowAttribute = "id";
+        $this->modelClassName = CmsAgent::className();
 
         parent::init();
     }
@@ -40,20 +41,20 @@ class AdminCmsAgentController extends AdminModelEditorController
         return ArrayHelper::merge(parent::actions(),
             [
                 "activate-multi" =>
-                [
-                    'class'             => AdminMultiModelEditAction::className(),
-                    "name"              => \Yii::t('skeeks/agent', 'Activate'),
-                    //"icon"              => "glyphicon glyphicon-trash",
-                    "eachCallback"      => [$this, 'eachMultiActivate'],
-                ],
+                    [
+                        'class' => AdminMultiModelEditAction::className(),
+                        "name" => \Yii::t('skeeks/agent', 'Activate'),
+                        //"icon"              => "glyphicon glyphicon-trash",
+                        "eachCallback" => [$this, 'eachMultiActivate'],
+                    ],
 
                 "inActivate-multi" =>
-                [
-                    'class'             => AdminMultiModelEditAction::className(),
-                    "name"              => \Yii::t('skeeks/agent', 'Deactivate'),
-                    //"icon"              => "glyphicon glyphicon-trash",
-                    "eachCallback"      => [$this, 'eachMultiInActivate'],
-                ]
+                    [
+                        'class' => AdminMultiModelEditAction::className(),
+                        "name" => \Yii::t('skeeks/agent', 'Deactivate'),
+                        //"icon"              => "glyphicon glyphicon-trash",
+                        "eachCallback" => [$this, 'eachMultiInActivate'],
+                    ]
             ]
         );
     }
@@ -65,8 +66,7 @@ class AdminCmsAgentController extends AdminModelEditorController
     public function actionLoad()
     {
         $rr = new RequestResponse();
-        if ($rr->isRequestAjaxPost())
-        {
+        if ($rr->isRequestAjaxPost()) {
             \Yii::$app->cmsAgent->loadAgents();
             $rr->message = \Yii::t('skeeks/agent', 'Agents have been updated successfully');
             $rr->success = true;
@@ -81,8 +81,7 @@ class AdminCmsAgentController extends AdminModelEditorController
     public function actionStopExecutable()
     {
         $rr = new RequestResponse();
-        if ($rr->isRequestAjaxPost())
-        {
+        if ($rr->isRequestAjaxPost()) {
             $stoppedLong = CmsAgent::stopLongExecutable(0);
             $rr->message = \Yii::t('skeeks/agent', 'Running agents stopped');
             $rr->success = true;

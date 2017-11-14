@@ -5,8 +5,10 @@
  * @copyright 2010 SkeekS (СкикС)
  * @date 15.04.2016
  */
+
 namespace skeeks\cms\agent;
-use skeeks\cms\agent\models\CmsAgent;
+
+use skeeks\cms\agent\models\CmsAgentModel;
 use skeeks\cms\helpers\FileHelper;
 use yii\base\BootstrapInterface;
 use yii\base\Component;
@@ -26,17 +28,17 @@ class CmsAgentComponent extends Component implements BootstrapInterface
     /**
      * @var bool Enabled agents on the hits
      */
-    public $onHitsEnabled   = true;
+    public $onHitsEnabled = true;
 
     /**
      * @var int Interval if enabled agents on the hits
      */
-    public $onHitsInterval  = 60;
+    public $onHitsInterval = 60;
 
     /**
      * @var int Maximum wait time for the agent
      */
-    public $agentMaxExecuteTime    = 7200; //2 hours
+    public $agentMaxExecuteTime = 7200; //2 hours
 
     /**
      * @var array
@@ -46,21 +48,19 @@ class CmsAgentComponent extends Component implements BootstrapInterface
 
     public function bootstrap($application)
     {
-        if ($application instanceof Application && $this->onHitsEnabled)
-        {
+        if ($application instanceof Application && $this->onHitsEnabled) {
             $key = 'Agents';
             Yii::beginProfile(\Yii::t('skeeks/agent', "Agents enabled on the hits"));
 
-                $data = \Yii::$app->cache->get($key);
-                if ($data === false)
-                {
-                    Yii::beginProfile(\Yii::t('skeeks/agent', "Executing"));
+            $data = \Yii::$app->cache->get($key);
+            if ($data === false) {
+                Yii::beginProfile(\Yii::t('skeeks/agent', "Executing"));
 
-                        $result = \Yii::$app->console->execute("cd " . ROOT_DIR . '; php yii cmsAgent/execute;');
-                        \Yii::$app->cache->set($key, '1', (int) $this->onHitsInterval);
+                $result = \Yii::$app->console->execute("cd " . ROOT_DIR . '; php yii cmsAgent/execute;');
+                \Yii::$app->cache->set($key, '1', (int)$this->onHitsInterval);
 
-                    Yii::endProfile(\Yii::t('skeeks/agent', "Executing"));
-                }
+                Yii::endProfile(\Yii::t('skeeks/agent', "Executing"));
+            }
 
             Yii::endProfile(\Yii::t('skeeks/agent', "Agents enabled on the hits"));
         }
@@ -72,13 +72,12 @@ class CmsAgentComponent extends Component implements BootstrapInterface
     public function getAgentsConfig()
     {
         $result = [];
-        foreach ($this->agentsConfigFiles as $filePath)
-        {
-            $fileData = (array) include $filePath;
+        foreach ($this->agentsConfigFiles as $filePath) {
+            $fileData = (array)include $filePath;
             $result = \yii\helpers\ArrayHelper::merge($result, $fileData);
         }
 
-        return (array) $result;
+        return (array)$result;
     }
 
     /**
@@ -95,10 +94,8 @@ class CmsAgentComponent extends Component implements BootstrapInterface
         ));
 
         $result = [];
-        foreach ($files as $file)
-        {
-            if (file_exists($file))
-            {
+        foreach ($files as $file) {
+            if (file_exists($file)) {
                 $result[] = $file;
             }
         }
@@ -111,12 +108,9 @@ class CmsAgentComponent extends Component implements BootstrapInterface
      */
     public function loadAgents()
     {
-        if ($this->agentsConfig)
-        {
-            foreach ($this->agentsConfig as $exec => $data)
-            {
-                if (CmsAgent::find()->where(['name' => $exec])->one())
-                {
+        if ($this->agentsConfig) {
+            foreach ($this->agentsConfig as $exec => $data) {
+                if (CmsAgent::find()->where(['name' => $exec])->one()) {
                     continue;
                 }
 

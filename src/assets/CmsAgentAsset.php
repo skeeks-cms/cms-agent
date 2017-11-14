@@ -5,7 +5,9 @@
  * @copyright 2010 SkeekS (СкикС)
  * @date 15.04.2016
  */
+
 namespace skeeks\cms\agent\assets;
+
 use skeeks\cms\base\AssetBundle;
 
 /**
@@ -15,6 +17,4 @@ use skeeks\cms\base\AssetBundle;
 class CmsAgentAsset extends AssetBundle
 {
     public $sourcePath = '@skeeks/cms/agent/assets';
-
-
 }

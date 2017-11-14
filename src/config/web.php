@@ -3,19 +3,17 @@ return [
 
     'bootstrap' => ['cmsAgent'],
 
-    'components' =>
-    [
+    'components' => [
         'cmsAgent' => [
-            'class'             => 'skeeks\cms\agent\CmsAgentComponent',
-            'onHitsEnabled'     => true
+            'class' => 'skeeks\cms\agent\CmsAgentComponent',
+            'onHitsEnabled' => true
         ],
 
         'i18n' => [
-            'translations' =>
-            [
+            'translations' => [
                 'skeeks/agent' => [
-                    'class'             => 'yii\i18n\PhpMessageSource',
-                    'basePath'          => '@skeeks/cms/agent/messages',
+                    'class' => 'yii\i18n\PhpMessageSource',
+                    'basePath' => '@skeeks/cms/agent/messages',
                     'fileMap' => [
                         'skeeks/agent' => 'main.php',
                     ],
@@ -24,10 +22,9 @@ return [
         ]
     ],
 
-    'modules' =>
-    [
+    'modules' => [
         'cmsAgent' => [
-            'class'         => 'skeeks\cms\agent\CmsAgentModule',
+            'class' => 'skeeks\cms\agent\CmsAgentModule',
         ]
     ]
 ];

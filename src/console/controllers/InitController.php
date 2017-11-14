@@ -5,8 +5,10 @@
  * @copyright 2010 SkeekS (СкикС)
  * @date 17.04.2016
  */
+
 namespace skeeks\cms\agent\console\controllers;
-use skeeks\cms\agent\models\CmsAgent;
+
+use skeeks\cms\agent\models\CmsAgentModel;
 use yii\console\Controller;
 
 /**

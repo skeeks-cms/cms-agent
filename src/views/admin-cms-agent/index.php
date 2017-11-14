@@ -42,11 +42,10 @@ JS
     'id' => 'sx-agents'
 ]); ?>
 
-    <?
+<?
 
 
-
-    $this->registerJs(<<<JS
+$this->registerJs(<<<JS
 (function(sx, $, _)
 {
     sx.classes.LoadAgents = sx.classes.Component.extend({
@@ -136,52 +135,52 @@ $this->registerCss(<<<CSS
 }
 CSS
 );
-    ?>
+?>
 
 
-    <?php echo $this->render('_search', [
-        'searchModel'   => $searchModel,
-        'dataProvider'  => $dataProvider
-    ]); ?>
+<?php echo $this->render('_search', [
+    'searchModel' => $searchModel,
+    'dataProvider' => $dataProvider
+]); ?>
 
-    <div class="row">
-        <div class="col-md-12">
-            <div class="pull-left">
-            <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-stop\"></i> ". \Yii::t('skeeks/agent', 'Stop running'), "#", [
-                'class'         => 'btn btn-primary sx-btn-stop-executable',
+<div class="row">
+    <div class="col-md-12">
+        <div class="pull-left">
+            <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-stop\"></i> " . \Yii::t('skeeks/agent', 'Stop running'), "#", [
+                'class' => 'btn btn-primary sx-btn-stop-executable',
             ]); ?>
-            </div>
+        </div>
 
 
-            <div class="pull-right">
-                <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-retweet\"></i> ". \Yii::t('skeeks/agent', 'Find and download of files'), "#", [
-                    'class'         => 'btn btn-primary sx-btn-make',
-                ]); ?>
-                <span class="sx-legend">
-                    <?= \Yii::t('skeeks/agent', 'Files with agents'); ?> <span class="sx-orange"><?= count(\Yii::$app->cmsAgent->agentsConfigFiles); ?></span>
-                    | <?= \Yii::t('skeeks/agent', 'Found agents'); ?> <span class="sx-green"><?= count(\Yii::$app->cmsAgent->agentsConfig); ?></span>
+        <div class="pull-right">
+            <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-retweet\"></i> " . \Yii::t('skeeks/agent', 'Find and download of files'), "#", [
+                'class' => 'btn btn-primary sx-btn-make',
+            ]); ?>
+            <span class="sx-legend">
+                    <?= \Yii::t('skeeks/agent', 'Files with agents'); ?> <span
+                        class="sx-orange"><?= count(\Yii::$app->cmsAgent->agentsConfigFiles); ?></span>
+                    | <?= \Yii::t('skeeks/agent', 'Found agents'); ?> <span
+                        class="sx-green"><?= count(\Yii::$app->cmsAgent->agentsConfig); ?></span>
                 </span>
-            </div>
         </div>
     </div>
+</div>
 
-    <br />
+<br/>
 
 <?= \skeeks\cms\modules\admin\widgets\GridViewStandart::widget([
-    'dataProvider'          => $dataProvider,
-    'filterModel'           => $searchModel,
-    'adminController'       => $controller,
-    'pjax'                  => $pjax,
+    'dataProvider' => $dataProvider,
+    'filterModel' => $searchModel,
+    'adminController' => $controller,
+    'pjax' => $pjax,
 
-    "columns"      => [
+    "columns" => [
         [
             'attribute' => 'is_running',
             'filter' => \Yii::$app->cms->booleanFormat(),
             'format' => 'raw',
-            'value' => function(\skeeks\cms\agent\models\CmsAgent $cmsAgent)
-            {
-                if ($cmsAgent->is_running == 'Y')
-                {
+            'value' => function (\skeeks\cms\agent\models\CmsAgentModel $cmsAgent) {
+                if ($cmsAgent->is_running == 'Y') {
                     return \yii\helpers\Html::img(\skeeks\cms\agent\assets\CmsAgentAsset::getAssetUrl('loaders/loader.svg'), [
                         'height' => '30'
                     ]);
@@ -194,22 +193,22 @@ CSS
         'description',
 
         [
-            'class'         => \skeeks\cms\grid\DateTimeColumnData::className(),
-            'attribute'     => "last_exec_at"
+            'class' => \skeeks\cms\grid\DateTimeColumnData::className(),
+            'attribute' => "last_exec_at"
         ],
 
         [
-            'class'         => \skeeks\cms\grid\DateTimeColumnData::className(),
-            'attribute'     => "next_exec_at"
+            'class' => \skeeks\cms\grid\DateTimeColumnData::className(),
+            'attribute' => "next_exec_at"
         ],
 
         [
-            'attribute'     => "agent_interval"
+            'attribute' => "agent_interval"
         ],
 
         [
-            'class'         => \skeeks\cms\grid\BooleanColumn::className(),
-            'attribute'     => "active"
+            'class' => \skeeks\cms\grid\BooleanColumn::className(),
+            'attribute' => "active"
         ],
     ],
 ]); ?>
@@ -222,11 +221,11 @@ CSS
         'options' => [
             'class' => 'alert-warning',
         ],
-    ])?>
+    ]) ?>
 
-        <?= \Yii::t('skeeks/agent', 'Attention! You use agents mechanism hits users. If possible, switch them on cron.'); ?>
-        <br />
-        <b>* * * * * cd <?= ROOT_DIR; ?> && php yii cmsAgent/execute > /dev/null 2>&1</b>
+    <?= \Yii::t('skeeks/agent', 'Attention! You use agents mechanism hits users. If possible, switch them on cron.'); ?>
+    <br/>
+    <b>* * * * * cd <?= ROOT_DIR; ?> && php yii cmsAgent/execute > /dev/null 2>&1</b>
 
     <? \yii\bootstrap\Alert::end(); ?>
 <? else: ?>
@@ -234,22 +233,22 @@ CSS
         'options' => [
             'class' => 'alert-success',
         ],
-    ])?>
+    ]) ?>
 
-        <?= \Yii::t('skeeks/agent', 'In the project settings specified that you are using a mechanism on the crown agents. If the agents do not work, check the entry in the file cron'); ?>
-        <br />
-        <b>* * * * * cd <?= ROOT_DIR; ?> && php yii cmsAgent/execute > /dev/null 2>&1</b>
+    <?= \Yii::t('skeeks/agent', 'In the project settings specified that you are using a mechanism on the crown agents. If the agents do not work, check the entry in the file cron'); ?>
+    <br/>
+    <b>* * * * * cd <?= ROOT_DIR; ?> && php yii cmsAgent/execute > /dev/null 2>&1</b>
     <? \yii\bootstrap\Alert::end(); ?>
 <? endif; ?>
 
 <!--<hr />-->
 
 <!--<pre>
-<?/*
+<? /*
 print_r(Yii::$app->cmsAgent->agentsConfig);
-*/?>
+*/ ?>
 </pre>-->
-<?/*=
+<? /*=
     \skeeks\cms\modules\admin\widgets\GridView::widget([
         'dataProvider' => new \yii\data\ArrayDataProvider([
             'models' => \Yii::$app->cmsAgent->agentsConfigFiles
@@ -259,4 +258,4 @@ print_r(Yii::$app->cmsAgent->agentsConfig);
 
         ]
     ]);
-*/?>
+*/ ?>

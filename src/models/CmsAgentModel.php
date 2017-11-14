@@ -5,6 +5,7 @@
  * @copyright 2010 SkeekS (СкикС)
  * @date 15.07.2015
  */
+
 namespace skeeks\cms\agent\models;
 
 use skeeks\cms\components\Cms;
@@ -27,7 +28,7 @@ use yii\db\ActiveRecord;
  * @property string $is_period
  * @property string $is_running
  */
-class CmsAgent extends ActiveRecord
+class CmsAgentModel extends ActiveRecord
 {
     /**
      * @inheritdoc
@@ -63,12 +64,10 @@ class CmsAgent extends ActiveRecord
             [['is_running'], 'default', 'value' => 'N'],
             [['agent_interval'], 'default', 'value' => 86400],
             [['priority'], 'default', 'value' => 100],
-            [['next_exec_at'], 'default', 'value' => function(self $model)
-            {
-                return \Yii::$app->formatter->asTimestamp(time()) + (int) $model->agent_interval;
+            [['next_exec_at'], 'default', 'value' => function (self $model) {
+                return \Yii::$app->formatter->asTimestamp(time()) + (int)$model->agent_interval;
             }],
-            [['last_exec_at'], 'default', 'value' => function(self $model)
-            {
+            [['last_exec_at'], 'default', 'value' => function (self $model) {
                 return \Yii::$app->formatter->asTimestamp(time());
             }],
         ];
@@ -99,8 +98,8 @@ class CmsAgent extends ActiveRecord
      */
     public function stop()
     {
-        $this->is_running   = Cms::BOOL_N;
-        $this->next_exec_at = \Yii::$app->formatter->asTimestamp(time()) + (int) $this->agent_interval;
+        $this->is_running = Cms::BOOL_N;
+        $this->next_exec_at = \Yii::$app->formatter->asTimestamp(time()) + (int)$this->agent_interval;
         $this->last_exec_at = \Yii::$app->formatter->asTimestamp(time());
         return $this->save();
     }
@@ -112,37 +111,30 @@ class CmsAgent extends ActiveRecord
      */
     static public function stopLongExecutable($agentMaxExecuteTime = null)
     {
-        if ($agentMaxExecuteTime === null)
-        {
+        if ($agentMaxExecuteTime === null) {
             $agentMaxExecuteTime = \Yii::$app->cmsAgent->agentMaxExecuteTime;
         }
 
-        $time = \Yii::$app->formatter->asTimestamp(time()) - (int) $agentMaxExecuteTime;
+        $time = \Yii::$app->formatter->asTimestamp(time()) - (int)$agentMaxExecuteTime;
 
         $running = static::find()
             ->where([
                 'is_running' => Cms::BOOL_Y
             ])
             ->orderBy('priority')
-            ->all();
-        ;
+            ->all();;
 
         $stoping = 0;
 
-        if ($running)
-        {
+        if ($running) {
             /**
              * @var $agent CmsAgent
              */
-            foreach ($running as $agent)
-            {
-                if ($agent->next_exec_at <= $time)
-                {
-                    if ($agent->stop())
-                    {
-                        $stoping ++;
-                    } else
-                    {
+            foreach ($running as $agent) {
+                if ($agent->next_exec_at <= $time) {
+                    if ($agent->stop()) {
+                        $stoping++;
+                    } else {
                         \Yii::error('Not stopped long agent: ' . $agent->name, 'skeeks/agent');
                     }
                 }
@@ -165,8 +157,7 @@ class CmsAgent extends ActiveRecord
             ])
             ->andWhere([
                 '<=', 'next_exec_at', \Yii::$app->formatter->asTimestamp(time())
-            ])->orderBy('priority')
-        ;
+            ])->orderBy('priority');
     }
 
 }

@@ -5,8 +5,10 @@
  * @copyright 2010 SkeekS (СкикС)
  * @date 17.04.2016
  */
+
 namespace skeeks\cms\agent\console\controllers;
-use skeeks\cms\agent\models\CmsAgent;
+
+use skeeks\cms\agent\models\CmsAgentModel;
 use skeeks\cms\components\Cms;
 use skeeks\cms\helpers\StringHelper;
 use yii\console\Controller;
@@ -24,8 +26,7 @@ class ExecuteController extends Controller
     public function actionIndex()
     {
         $stoppedLong = CmsAgent::stopLongExecutable();
-        if ($stoppedLong > 0)
-        {
+        if ($stoppedLong > 0) {
             \Yii::warning('Agents stopped: ' . count($stoppedLong), 'skeeks/agent');
         }
 
@@ -34,10 +35,8 @@ class ExecuteController extends Controller
         \Yii::info('Agents execute: ' . count($agents), 'skeeks/agent::total');
         $this->stdout('Agents execute: ' . count($agents) . "\n", Console::BOLD);
 
-        if ($agents)
-        {
-            foreach ($agents as $agent)
-            {
+        if ($agents) {
+            foreach ($agents as $agent) {
                 $this->_executeAgent($agent);
             }
         }
@@ -54,8 +53,7 @@ class ExecuteController extends Controller
 
 
         //Если уже запщен, то не будем запускать еще раз.
-        if ($cmsAgent->is_running == Cms::BOOL_Y)
-        {
+        if ($cmsAgent->is_running == Cms::BOOL_Y) {
             $this->stdout('Agent is already running: ' . $cmsAgent->name, Console::BOLD);
             return $this;
         }
@@ -69,7 +67,7 @@ class ExecuteController extends Controller
         $this->stdout("------------------------------\n");
         $this->stdout(" > {$cmsAgent->name}\n");
         $result = \Yii::$app->console->execute("cd " . ROOT_DIR . "; php yii " . $cmsAgent->name);
-        $this->stdout( $result . "\n");
+        $this->stdout($result . "\n");
 
         $time = $this->_microtimeFloat() - $timeStart;
 
@@ -91,8 +89,7 @@ class ExecuteController extends Controller
      */
     protected function _getShortResultContent($result = '')
     {
-        if (StringHelper::strlen($result) > 10000)
-        {
+        if (StringHelper::strlen($result) > 10000) {
             $totalLenght = StringHelper::strlen($result);
             $newResult = '';
             $newResult .= StringHelper::substr($result, 0, 5000);
@@ -100,8 +97,7 @@ class ExecuteController extends Controller
             $newResult .= StringHelper::substr($result, ($totalLenght - 3000), $totalLenght);
 
             return $newResult;
-        } else
-        {
+        } else {
             return $result;
         }
     }

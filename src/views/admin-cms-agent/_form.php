@@ -12,16 +12,16 @@ use common\models\User;
 
 <?= $form->fieldSet(Yii::t('skeeks/agent', 'Main')); ?>
 
-    <?= $form->field($model, 'next_exec_at')->widget(
-        \kartik\datecontrol\DateControl::classname(), [
-        'type' => \kartik\datecontrol\DateControl::FORMAT_DATETIME,
-    ]); ?>
-    <?= $form->fieldRadioListBoolean($model, 'active'); ?>
-    <?= $form->field($model, 'name')->textarea(); ?>
-    <?= $form->field($model, 'description')->textarea(); ?>
-    <?= $form->fieldInputInt($model, 'priority'); ?>
-    <?= $form->fieldRadioListBoolean($model, 'is_period'); ?>
-    <?= $form->fieldInputInt($model, 'agent_interval'); ?>
+<?= $form->field($model, 'next_exec_at')->widget(
+    \kartik\datecontrol\DateControl::classname(), [
+    'type' => \kartik\datecontrol\DateControl::FORMAT_DATETIME,
+]); ?>
+<?= $form->fieldRadioListBoolean($model, 'active'); ?>
+<?= $form->field($model, 'name')->textarea(); ?>
+<?= $form->field($model, 'description')->textarea(); ?>
+<?= $form->fieldInputInt($model, 'priority'); ?>
+<?= $form->fieldRadioListBoolean($model, 'is_period'); ?>
+<?= $form->fieldInputInt($model, 'agent_interval'); ?>
 
 <?= $form->fieldSetEnd(); ?>
 
