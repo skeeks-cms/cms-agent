@@ -1,6 +1,10 @@
 CHANGELOG
 ==============
 
+2.0.0-alpha
+-----------------
+ * Change configs
+ 
 1.3.0
 -----------------
  * SkeekS CMS ~ 5.0

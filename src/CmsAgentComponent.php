@@ -38,6 +38,11 @@ class CmsAgentComponent extends Component implements BootstrapInterface
      */
     public $agentMaxExecuteTime    = 7200; //2 hours
 
+    /**
+     * @var array
+     */
+    public $commands = [];
+
 
     public function bootstrap($application)
     {
