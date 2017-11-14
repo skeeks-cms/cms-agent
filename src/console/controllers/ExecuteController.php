@@ -25,12 +25,12 @@ class ExecuteController extends Controller
      */
     public function actionIndex()
     {
-        $stoppedLong = CmsAgent::stopLongExecutable();
+        $stoppedLong = CmsAgentModel::stopLongExecutable();
         if ($stoppedLong > 0) {
             \Yii::warning('Agents stopped: ' . count($stoppedLong), 'skeeks/agent');
         }
 
-        $agents = CmsAgent::findForExecute()->all();
+        $agents = CmsAgentModel::findForExecute()->all();
 
         \Yii::info('Agents execute: ' . count($agents), 'skeeks/agent::total');
         $this->stdout('Agents execute: ' . count($agents) . "\n", Console::BOLD);
@@ -48,7 +48,7 @@ class ExecuteController extends Controller
      *
      * @return $this
      */
-    protected function _executeAgent(CmsAgent $cmsAgent)
+    protected function _executeAgent(CmsAgentModel $cmsAgent)
     {
 
 
