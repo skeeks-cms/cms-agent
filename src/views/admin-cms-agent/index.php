@@ -159,10 +159,8 @@ CSS
                 'class' => 'btn btn-primary sx-btn-make',
             ]); ?>
             <span class="sx-legend">
-                    <?= \Yii::t('skeeks/agent', 'Files with agents'); ?> <span
-                        class="sx-orange"><?= count(\Yii::$app->cmsAgent->agentsConfigFiles); ?></span>
-                    | <?= \Yii::t('skeeks/agent', 'Found agents'); ?> <span
-                        class="sx-green"><?= count(\Yii::$app->cmsAgent->agentsConfig); ?></span>
+                    <?= \Yii::t('skeeks/agent', 'Found agents'); ?> <span
+                        class="sx-green"><?= count(\Yii::$app->cmsAgent->commands); ?></span>
                 </span>
         </div>
     </div>

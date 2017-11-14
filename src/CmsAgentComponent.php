@@ -17,7 +17,6 @@ use yii\web\Application;
 use Yii;
 
 /**
- * @property string[] $agentsConfigFiles
  * @property [] $agentsConfig
  *
  * Class CmsAgentComponent

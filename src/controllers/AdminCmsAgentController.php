@@ -28,7 +28,7 @@ class AdminCmsAgentController extends AdminModelEditorController
     {
         $this->name = \Yii::t('skeeks/agent', 'Agents');
         $this->modelShowAttribute = "id";
-        $this->modelClassName = CmsAgent::className();
+        $this->modelClassName = CmsAgentModel::className();
 
         parent::init();
     }

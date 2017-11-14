@@ -81,6 +81,6 @@ class CmsAgent extends Component
      */
     public function getName()
     {
-        return (string)$this->name;
+        return (string)$this->_name;
     }
 }
