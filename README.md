@@ -83,9 +83,8 @@ How to enable execution on cron agents
 
 Links
 ------
-* [Web site](http://en.cms.skeeks.com)
-* [Web site (rus)](http://cms.skeeks.com)
-* [Author](http://skeeks.com)
+* [Web site](https://cms.skeeks.com)
+* [Author](https://skeeks.com)
 * [ChangeLog](https://github.com/skeeks-cms/cms-agent/blob/master/CHANGELOG.md)
 
 
