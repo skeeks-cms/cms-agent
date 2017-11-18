@@ -3,7 +3,7 @@ CHANGELOG
 
 2.0.0-alpha2
 -----------------
- * Pgsql
+ * Support pgsql
  
 2.0.0-alpha
 -----------------
