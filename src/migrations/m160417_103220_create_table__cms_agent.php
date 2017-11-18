@@ -43,15 +43,13 @@ class m160417_103220_create_table__cms_agent extends Migration
 
         ], $tableOptions);
 
-        $this->execute("ALTER TABLE {{%cms_agent}} ADD INDEX(last_exec_at);");
-        $this->execute("ALTER TABLE {{%cms_agent}} ADD INDEX(next_exec_at);");
-        $this->execute("ALTER TABLE {{%cms_agent}} ADD INDEX(agent_interval);");
-        $this->execute("ALTER TABLE {{%cms_agent}} ADD INDEX(priority);");
-        $this->execute("ALTER TABLE {{%cms_agent}} ADD INDEX(active);");
-        $this->execute("ALTER TABLE {{%cms_agent}} ADD INDEX(is_period);");
-        $this->execute("ALTER TABLE {{%cms_agent}} ADD INDEX(is_running);");
-
-        $this->execute("ALTER TABLE {{%cms_agent}} COMMENT = 'Агенты';");
+        $this->createIndex('cms_agent__last_exec_at', '{{%cms_agent}}', 'last_exec_at');
+        $this->createIndex('cms_agent__next_exec_at', '{{%cms_agent}}', 'next_exec_at');
+        $this->createIndex('cms_agent__agent_interval', '{{%cms_agent}}', 'agent_interval');
+        $this->createIndex('cms_agent__priority', '{{%cms_agent}}', 'priority');
+        $this->createIndex('cms_agent__active', '{{%cms_agent}}', 'active');
+        $this->createIndex('cms_agent__is_period', '{{%cms_agent}}', 'is_period');
+        $this->createIndex('cms_agent__is_running', '{{%cms_agent}}', 'is_running');
     }
 
     public function safeDown()
