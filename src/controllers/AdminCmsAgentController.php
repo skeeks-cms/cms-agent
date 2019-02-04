@@ -44,7 +44,7 @@ class AdminCmsAgentController extends AdminModelEditorController
                     [
                         'class' => AdminMultiModelEditAction::className(),
                         "name" => \Yii::t('skeeks/agent', 'Activate'),
-                        //"icon"              => "glyphicon glyphicon-trash",
+                        //"icon"              => "fa fa-trash",
                         "eachCallback" => [$this, 'eachMultiActivate'],
                     ],
 
@@ -52,7 +52,7 @@ class AdminCmsAgentController extends AdminModelEditorController
                     [
                         'class' => AdminMultiModelEditAction::className(),
                         "name" => \Yii::t('skeeks/agent', 'Deactivate'),
-                        //"icon"              => "glyphicon glyphicon-trash",
+                        //"icon"              => "fa fa-trash",
                         "eachCallback" => [$this, 'eachMultiInActivate'],
                     ]
             ]

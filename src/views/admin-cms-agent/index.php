@@ -218,7 +218,7 @@ CSS
 <? \skeeks\cms\modules\admin\widgets\Pjax::end(); ?>
 
 <? if (\Yii::$app->cmsAgent->onHitsEnabled) : ?>
-    <? \yii\bootstrap\Alert::begin([
+    <? $alert = \yii\bootstrap\Alert::begin([
         'options' => [
             'class' => 'alert-warning',
         ],
@@ -228,9 +228,9 @@ CSS
     <br/>
     <b>* * * * * cd <?= ROOT_DIR; ?> && php yii cmsAgent/execute > /dev/null 2>&1</b>
 
-    <? \yii\bootstrap\Alert::end(); ?>
+    <? $alert::end(); ?>
 <? else: ?>
-    <? \yii\bootstrap\Alert::begin([
+    <? $alert = \yii\bootstrap\Alert::begin([
         'options' => [
             'class' => 'alert-success',
         ],
@@ -240,7 +240,7 @@ CSS
         'In the project settings specified that you are using a mechanism on the crown agents. If the agents do not work, check the entry in the file cron'); ?>
     <br/>
     <b>* * * * * cd <?= ROOT_DIR; ?> && php yii cmsAgent/execute > /dev/null 2>&1</b>
-    <? \yii\bootstrap\Alert::end(); ?>
+    <? $alert::end(); ?>
 <? endif; ?>
 
 <!--<hr />-->
