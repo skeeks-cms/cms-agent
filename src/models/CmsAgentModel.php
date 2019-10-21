@@ -73,7 +73,7 @@ class CmsAgentModel extends ActiveRecord
                 ['next_exec_at'],
                 'default',
                 'value' => function (self $model) {
-                    return \Yii::$app->formatter->asTimestamp(time()) + (int)$model->agent_interval;
+                    return \Yii::$app->formatter->asTimestamp(time());
                 }
             ],
             [
