@@ -30,6 +30,8 @@ class AdminCmsAgentController extends AdminModelEditorController
         $this->modelShowAttribute = "id";
         $this->modelClassName = CmsAgentModel::className();
 
+        $this->generateAccessActions = false;
+
         parent::init();
     }
 

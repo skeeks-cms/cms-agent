@@ -1,29 +1,17 @@
 <?php
 return [
 
-    'components' => [
-        'cmsAgent' => [
-            'class' => 'skeeks\cms\agent\CmsAgentComponent',
+    'controllerMap' => [
+        'migrate' => [
+            'migrationPath' => [
+                '@skeeks/cms/agent/migrations',
+            ],
         ],
-
-        'i18n' => [
-            'translations' => [
-                'skeeks/agent' => [
-                    'class' => 'yii\i18n\PhpMessageSource',
-                    'basePath' => '@skeeks/cms/agent/messages',
-                    'fileMap' => [
-                        'skeeks/agent' => 'main.php',
-                    ],
-                ]
-            ]
-        ]
     ],
 
-    'modules' =>
-        [
-            'cmsAgent' => [
-                'class' => 'skeeks\cms\agent\CmsAgentModule',
-                'controllerNamespace' => 'skeeks\cms\agent\console\controllers'
-            ]
-        ]
+    'modules' => [
+        'cmsAgent' => [
+            'controllerNamespace' => 'skeeks\cms\agent\console\controllers',
+        ],
+    ],
 ];

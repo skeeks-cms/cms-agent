@@ -5,26 +5,30 @@ return [
 
     'components' => [
         'cmsAgent' => [
-            'class' => 'skeeks\cms\agent\CmsAgentComponent',
-            'onHitsEnabled' => true
+            'onHitsEnabled' => true,
         ],
 
-        'i18n' => [
-            'translations' => [
-                'skeeks/agent' => [
-                    'class' => 'yii\i18n\PhpMessageSource',
-                    'basePath' => '@skeeks/cms/agent/messages',
-                    'fileMap' => [
-                        'skeeks/agent' => 'main.php',
-                    ],
-                ]
-            ]
-        ]
-    ],
+        'backendAdmin' => [
+            'menu' => [
+                'data' => [
+                    'other' => [
+                        'items' => [
+                            [
+                                "label" => ['skeeks/agent', "Agents"],
+                                "img"   => ['skeeks\cms\agent\assets\CmsAgentAsset', 'icons/clock.png'],
 
-    'modules' => [
-        'cmsAgent' => [
-            'class' => 'skeeks\cms\agent\CmsAgentModule',
-        ]
-    ]
+                                'items' => [
+                                    [
+                                        "label" => ['skeeks/agent', "Agents"],
+                                        "url"   => ["cmsAgent/admin-cms-agent"],
+                                        "img"   => ['skeeks\cms\agent\assets\CmsAgentAsset', 'icons/clock.png'],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];
