@@ -25,7 +25,7 @@ return [
                         'child' => [
                             //Есть доступ к системе администрирования
                             'permissions' => [
-                                "measure/admin-measure",
+                                "cmsAgent/admin-cms-agent",
                             ],
                         ],
                     ],
