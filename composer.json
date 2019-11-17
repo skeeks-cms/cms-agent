@@ -32,7 +32,7 @@
             ],
             "web": [
                 "src/config/common.php",
-                "src/config/web.php",
+                "src/config/web.php"
             ]
         }
     }
