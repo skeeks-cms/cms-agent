@@ -14,14 +14,14 @@ return [
                     'other' => [
                         'items' => [
                             [
-                                "label" => ['skeeks/agent', "Agents"],
-                                "img"   => ['skeeks\cms\agent\assets\CmsAgentAsset', 'icons/clock.png'],
+                                "name" => ['skeeks/agent', "Agents"],
+                                "image"   => ['skeeks\cms\agent\assets\CmsAgentAsset', 'icons/clock.png'],
 
                                 'items' => [
                                     [
-                                        "label" => ['skeeks/agent', "Agents"],
+                                        "name" => ['skeeks/agent', "Agents"],
                                         "url"   => ["cmsAgent/admin-cms-agent"],
-                                        "img"   => ['skeeks\cms\agent\assets\CmsAgentAsset', 'icons/clock.png'],
+                                        "image"   => ['skeeks\cms\agent\assets\CmsAgentAsset', 'icons/clock.png'],
                                     ],
                                 ],
                             ],
