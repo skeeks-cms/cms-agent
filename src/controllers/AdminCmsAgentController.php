@@ -8,19 +8,31 @@
 
 namespace skeeks\cms\agent\controllers;
 
+use kartik\datecontrol\DateControl;
+use skeeks\cms\agent\CmsAgent;
 use skeeks\cms\agent\models\CmsAgentModel;
+use skeeks\cms\backend\controllers\BackendModelStandartController;
+use skeeks\cms\backend\events\ViewRenderEvent;
 use skeeks\cms\components\Cms;
+use skeeks\cms\grid\BooleanColumn;
+use skeeks\cms\grid\DateTimeColumnData;
 use skeeks\cms\helpers\RequestResponse;
 use skeeks\cms\modules\admin\actions\modelEditor\AdminMultiModelEditAction;
 use skeeks\cms\modules\admin\controllers\AdminModelEditorController;
 use skeeks\cms\modules\admin\traits\AdminModelEditorStandartControllerTrait;
+use skeeks\cms\queryfilters\QueryFiltersEvent;
+use skeeks\yii2\form\fields\BoolField;
+use skeeks\yii2\form\fields\TextareaField;
+use skeeks\yii2\form\fields\WidgetField;
+use yii\base\Event;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Html;
 
 /**
  * Class AdminCmsAgentController
  * @package skeeks\cms\controllers
  */
-class AdminCmsAgentController extends AdminModelEditorController
+class AdminCmsAgentController extends BackendModelStandartController
 {
     use AdminModelEditorStandartControllerTrait;
 
@@ -40,25 +52,162 @@ class AdminCmsAgentController extends AdminModelEditorController
      */
     public function actions()
     {
-        return ArrayHelper::merge(parent::actions(),
-            [
-                "activate-multi" =>
-                    [
-                        'class' => AdminMultiModelEditAction::className(),
-                        "name" => \Yii::t('skeeks/agent', 'Activate'),
-                        //"icon"              => "fa fa-trash",
-                        "eachCallback" => [$this, 'eachMultiActivate'],
+        return ArrayHelper::merge(parent::actions(), [
+
+            "index" => [
+                'on beforeRender' => function (ViewRenderEvent $event) {
+
+                    $event->content = $this->renderPartial("_before-index");
+                },
+                'on afterRender'  => function (ViewRenderEvent $event) {
+                    $event->content = "";
+                },
+                "filters"         => [
+                    'visibleFilters' => [
+                        'q',
                     ],
 
-                "inActivate-multi" =>
-                    [
-                        'class' => AdminMultiModelEditAction::className(),
-                        "name" => \Yii::t('skeeks/agent', 'Deactivate'),
-                        //"icon"              => "fa fa-trash",
-                        "eachCallback" => [$this, 'eachMultiInActivate'],
-                    ]
-            ]
-        );
+                    'filtersModel' => [
+                        'rules' => [
+                            ['q', 'safe'],
+                        ],
+
+                        'attributeDefines' => [
+                            'q',
+                        ],
+
+
+                        'fields' => [
+                            'q' => [
+                                'label'          => 'Поиск',
+                                'elementOptions' => [
+                                    'placeholder' => 'Поиск',
+                                ],
+                                'on apply'       => function (QueryFiltersEvent $e) {
+                                    /**
+                                     * @var $query ActiveQuery
+                                     */
+                                    $query = $e->dataProvider->query;
+
+                                    if ($e->field->value) {
+                                        $query->andWhere([
+                                            'or',
+                                            ['like', CmsAgentModel::tableName().'.name', $e->field->value],
+                                            ['like', CmsAgentModel::tableName().'.description', $e->field->value],
+                                        ]);
+
+                                        $query->groupBy([CmsAgentModel::tableName().'.id']);
+                                    }
+                                },
+                            ],
+                        ],
+                    ],
+                ],
+
+                "grid" => [
+                    'defaultPageSize' => 50,
+                    'visibleColumns'  => [
+                        'checkbox',
+                        'actions',
+
+                        'custom',
+
+                        'last_exec_at',
+                        'next_exec_at',
+
+                        'agent_interval',
+                        'active',
+                    ],
+
+                    'columns' => [
+                        'active'       => [
+                            'class' => BooleanColumn::class,
+                        ],
+                        'last_exec_at' => [
+                            'class' => DateTimeColumnData::class,
+                        ],
+                        'next_exec_at' => [
+                            'class' => DateTimeColumnData::class,
+                        ],
+
+                        'custom' => [
+                            'format' => 'raw',
+                            'value'  => function (CmsAgentModel $cmsAgentModel) {
+                                $result = [];
+                                $result[] = Html::a($cmsAgentModel->name, "#", [
+                                    'class' => 'sx-trigger-action',
+                                ]);
+
+                                $result[] = $cmsAgentModel->description;
+
+                                if ($cmsAgentModel->isRunning) {
+                                    $result[] = \yii\helpers\Html::img(\skeeks\cms\agent\assets\CmsAgentAsset::getAssetUrl('loaders/loader.svg'), [
+                                        'height' => '30',
+                                    ]);
+                                }
+
+                                return implode("<br>", $result);
+                            },
+                        ],
+                    ],
+                ],
+            ],
+
+            "create" => [
+                'fields' => [$this, 'updateFields'],
+            ],
+            "update" => [
+                'fields' => [$this, 'updateFields'],
+            ],
+
+            "activate-multi" => [
+                'class'        => AdminMultiModelEditAction::className(),
+                "name"         => \Yii::t('skeeks/agent', 'Activate'),
+                //"icon"              => "fa fa-trash",
+                "eachCallback" => [$this, 'eachMultiActivate'],
+            ],
+
+            "inActivate-multi" => [
+                'class'        => AdminMultiModelEditAction::className(),
+                "name"         => \Yii::t('skeeks/agent', 'Deactivate'),
+                //"icon"              => "fa fa-trash",
+                "eachCallback" => [$this, 'eachMultiInActivate'],
+            ],
+        ]);
+    }
+
+    public function updateFields()
+    {
+        return [
+            'next_exec_at' => [
+                'class' => WidgetField::class,
+                'widgetClass'  => DateControl::class,
+                'widgetConfig' => [
+                    'type' => DateControl::FORMAT_DATETIME,
+                ],
+            ],
+            'active' => [
+                'class' => BoolField::class,
+                'trueValue' => 'Y',
+                'falseValue' => 'N',
+                'allowNull' => false,
+            ],
+            'name',
+
+            'description' => [
+                'class' => TextareaField::class,
+            ],
+            'priority',
+
+            'is_period' => [
+                'class' => BoolField::class,
+                'trueValue' => 'Y',
+                'falseValue' => 'N',
+                'allowNull' => false,
+            ],
+
+            'agent_interval',
+        ];
     }
 
     /**
@@ -84,7 +233,7 @@ class AdminCmsAgentController extends AdminModelEditorController
     {
         $rr = new RequestResponse();
         if ($rr->isRequestAjaxPost()) {
-            $stoppedLong = CmsAgent::stopLongExecutable(0);
+            $stoppedLong = CmsAgentModel::stopLongExecutable(0);
             $rr->message = \Yii::t('skeeks/agent', 'Running agents stopped');
             $rr->success = true;
             return $rr;

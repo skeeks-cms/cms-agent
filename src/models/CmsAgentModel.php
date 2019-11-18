@@ -27,6 +27,8 @@ use yii\db\ActiveRecord;
  * @property string $active
  * @property string $is_period
  * @property string $is_running
+ *
+ * @property bool $isRunning
  */
 class CmsAgentModel extends ActiveRecord
 {
@@ -175,4 +177,12 @@ class CmsAgentModel extends ActiveRecord
             ])->orderBy('priority');
     }
 
+    /**
+     * Сейчас агент запущен?
+     * @return bool
+     */
+    public function getIsRunning()
+    {
+        return (bool) ($this->is_running == 'Y');
+    }
 }
