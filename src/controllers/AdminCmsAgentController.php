@@ -60,7 +60,7 @@ class AdminCmsAgentController extends BackendModelStandartController
                     $event->content = $this->renderPartial("_before-index");
                 },
                 'on afterRender'  => function (ViewRenderEvent $event) {
-                    $event->content = "";
+                    $event->content = $this->renderPartial("_after-index");
                 },
                 "filters"         => [
                     'visibleFilters' => [
