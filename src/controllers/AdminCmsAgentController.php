@@ -1,41 +1,34 @@
 <?php
 /**
+ * @link https://cms.skeeks.com/
+ * @copyright Copyright (c) 2010 SkeekS
+ * @license https://cms.skeeks.com/license/
  * @author Semenov Alexander <semenov@skeeks.com>
- * @link http://skeeks.com/
- * @copyright 2010 SkeekS (СкикС)
- * @date 17.04.2016
  */
 
 namespace skeeks\cms\agent\controllers;
 
 use kartik\datecontrol\DateControl;
-use skeeks\cms\agent\CmsAgent;
+use skeeks\cms\actions\backend\BackendModelMultiActivateAction;
+use skeeks\cms\actions\backend\BackendModelMultiDeactivateAction;
 use skeeks\cms\agent\models\CmsAgentModel;
 use skeeks\cms\backend\controllers\BackendModelStandartController;
 use skeeks\cms\backend\events\ViewRenderEvent;
-use skeeks\cms\components\Cms;
 use skeeks\cms\grid\BooleanColumn;
 use skeeks\cms\grid\DateTimeColumnData;
 use skeeks\cms\helpers\RequestResponse;
-use skeeks\cms\modules\admin\actions\modelEditor\AdminMultiModelEditAction;
-use skeeks\cms\modules\admin\controllers\AdminModelEditorController;
-use skeeks\cms\modules\admin\traits\AdminModelEditorStandartControllerTrait;
 use skeeks\cms\queryfilters\QueryFiltersEvent;
 use skeeks\yii2\form\fields\BoolField;
 use skeeks\yii2\form\fields\TextareaField;
 use skeeks\yii2\form\fields\WidgetField;
-use yii\base\Event;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 
 /**
- * Class AdminCmsAgentController
- * @package skeeks\cms\controllers
+ * @author Semenov Alexander <semenov@skeeks.com>
  */
 class AdminCmsAgentController extends BackendModelStandartController
 {
-    use AdminModelEditorStandartControllerTrait;
-
     public function init()
     {
         $this->name = \Yii::t('skeeks/agent', 'Agents');
@@ -161,17 +154,11 @@ class AdminCmsAgentController extends BackendModelStandartController
             ],
 
             "activate-multi" => [
-                'class'        => AdminMultiModelEditAction::className(),
-                "name"         => \Yii::t('skeeks/agent', 'Activate'),
-                //"icon"              => "fa fa-trash",
-                "eachCallback" => [$this, 'eachMultiActivate'],
+                'class' => BackendModelMultiActivateAction::className(),
             ],
 
             "inActivate-multi" => [
-                'class'        => AdminMultiModelEditAction::className(),
-                "name"         => \Yii::t('skeeks/agent', 'Deactivate'),
-                //"icon"              => "fa fa-trash",
-                "eachCallback" => [$this, 'eachMultiInActivate'],
+                'class' => BackendModelMultiDeactivateAction::class,
             ],
         ]);
     }
@@ -180,17 +167,17 @@ class AdminCmsAgentController extends BackendModelStandartController
     {
         return [
             'next_exec_at' => [
-                'class' => WidgetField::class,
+                'class'        => WidgetField::class,
                 'widgetClass'  => DateControl::class,
                 'widgetConfig' => [
                     'type' => DateControl::FORMAT_DATETIME,
                 ],
             ],
-            'active' => [
-                'class' => BoolField::class,
-                'trueValue' => 'Y',
+            'active'       => [
+                'class'      => BoolField::class,
+                'trueValue'  => 'Y',
                 'falseValue' => 'N',
-                'allowNull' => false,
+                'allowNull'  => false,
             ],
             'name',
 
@@ -200,10 +187,10 @@ class AdminCmsAgentController extends BackendModelStandartController
             'priority',
 
             'is_period' => [
-                'class' => BoolField::class,
-                'trueValue' => 'Y',
+                'class'      => BoolField::class,
+                'trueValue'  => 'Y',
                 'falseValue' => 'N',
-                'allowNull' => false,
+                'allowNull'  => false,
             ],
 
             'agent_interval',
