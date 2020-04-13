@@ -17,18 +17,19 @@ use yii\db\ActiveRecord;
 /**
  * This is the model class for table "{{%cms_agent}}".
  *
- * @property integer $id
- * @property integer $last_exec_at
- * @property integer $next_exec_at
- * @property string $name
- * @property string $description
- * @property integer $agent_interval
- * @property integer $priority
- * @property string $active
- * @property string $is_period
- * @property string $is_running
+ * @property integer      $id
+ * @property integer      $last_exec_at
+ * @property integer      $next_exec_at
+ * @property string       $name
+ * @property string       $description
+ * @property integer      $agent_interval
+ * @property integer      $priority
+ * @property string       $active
+ * @property string       $is_period
+ * @property string       $is_running
+ * @property integer|null $cms_site_id
  *
- * @property bool $isRunning
+ * @property bool         $isRunning
  */
 class CmsAgentModel extends ActiveRecord
 {
@@ -76,14 +77,26 @@ class CmsAgentModel extends ActiveRecord
                 'default',
                 'value' => function (self $model) {
                     return \Yii::$app->formatter->asTimestamp(time());
-                }
+                },
             ],
             [
                 ['last_exec_at'],
                 'default',
                 'value' => function (self $model) {
                     return \Yii::$app->formatter->asTimestamp(time());
-                }
+                },
+            ],
+            
+            [['cms_site_id',], 'integer'],
+            
+            [
+                'cms_site_id',
+                'default',
+                'value' => function () {
+                    if (\Yii::$app->cms->site) {
+                        return \Yii::$app->cms->site->id;
+                    }
+                },
             ],
         ];
     }
@@ -94,16 +107,16 @@ class CmsAgentModel extends ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => Yii::t('skeeks/agent', 'ID'),
-            'last_exec_at' => Yii::t('skeeks/agent', 'Last Execution At'),
-            'next_exec_at' => Yii::t('skeeks/agent', 'Next Execution At'),
-            'name' => Yii::t('skeeks/agent', "Agent's Function"),
+            'id'             => Yii::t('skeeks/agent', 'ID'),
+            'last_exec_at'   => Yii::t('skeeks/agent', 'Last Execution At'),
+            'next_exec_at'   => Yii::t('skeeks/agent', 'Next Execution At'),
+            'name'           => Yii::t('skeeks/agent', "Agent's Function"),
             'agent_interval' => Yii::t('skeeks/agent', 'Interval (sec)'),
-            'priority' => Yii::t('skeeks/agent', 'Priority'),
-            'active' => Yii::t('skeeks/agent', 'Active'),
-            'is_period' => Yii::t('skeeks/agent', 'Periodic'),
-            'is_running' => Yii::t('skeeks/agent', 'Is Running'),
-            'description' => Yii::t('skeeks/agent', 'Description'),
+            'priority'       => Yii::t('skeeks/agent', 'Priority'),
+            'active'         => Yii::t('skeeks/agent', 'Active'),
+            'is_period'      => Yii::t('skeeks/agent', 'Periodic'),
+            'is_running'     => Yii::t('skeeks/agent', 'Is Running'),
+            'description'    => Yii::t('skeeks/agent', 'Description'),
         ];
     }
 
@@ -134,7 +147,7 @@ class CmsAgentModel extends ActiveRecord
 
         $running = static::find()
             ->where([
-                'is_running' => Cms::BOOL_Y
+                'is_running' => Cms::BOOL_Y,
             ])
             ->orderBy('priority')
             ->all();;
@@ -150,7 +163,7 @@ class CmsAgentModel extends ActiveRecord
                     if ($agent->stop()) {
                         $stoping++;
                     } else {
-                        \Yii::error('Not stopped long agent: ' . $agent->name, 'skeeks/agent');
+                        \Yii::error('Not stopped long agent: '.$agent->name, 'skeeks/agent');
                     }
                 }
             }
@@ -168,12 +181,12 @@ class CmsAgentModel extends ActiveRecord
     {
         return static::find()->active()
             ->andWhere([
-                'is_running' => Cms::BOOL_N
+                'is_running' => Cms::BOOL_N,
             ])
             ->andWhere([
                 '<=',
                 'next_exec_at',
-                \Yii::$app->formatter->asTimestamp(time())
+                \Yii::$app->formatter->asTimestamp(time()),
             ])->orderBy('priority');
     }
 
@@ -183,6 +196,6 @@ class CmsAgentModel extends ActiveRecord
      */
     public function getIsRunning()
     {
-        return (bool) ($this->is_running == 'Y');
+        return (bool)($this->is_running == 'Y');
     }
 }

@@ -66,7 +66,12 @@ class ExecuteController extends Controller
 
         $this->stdout("------------------------------\n");
         $this->stdout(" > {$cmsAgent->name}\n");
-        $result = \Yii::$app->console->execute("cd " . ROOT_DIR . "; php yii " . $cmsAgent->name);
+
+        $phpCmd = "php yii";
+        if ($cmsAgent->cms_site_id) {
+            $phpCmd = "CMS_SITE={$cmsAgent->cms_site_id} php yii";
+        }
+        $result = \Yii::$app->console->execute("cd " . ROOT_DIR . "; {$phpCmd} " . $cmsAgent->name);
         $this->stdout($result . "\n");
 
         $time = $this->_microtimeFloat() - $timeStart;

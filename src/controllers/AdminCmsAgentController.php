@@ -21,6 +21,7 @@ use skeeks\cms\queryfilters\QueryFiltersEvent;
 use skeeks\yii2\form\fields\BoolField;
 use skeeks\yii2\form\fields\TextareaField;
 use skeeks\yii2\form\fields\WidgetField;
+use yii\base\Event;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 
@@ -98,6 +99,16 @@ class AdminCmsAgentController extends BackendModelStandartController
                 ],
 
                 "grid" => [
+                    'on init' => function (Event $e) {
+                        /**
+                         * @var $dataProvider ActiveDataProvider
+                         * @var $query ActiveQuery
+                         */
+                        $query = $e->sender->dataProvider->query;
+
+                        $query->andWhere(['cms_site_id' => \Yii::$app->cms->site->id]);
+                    },
+
                     'defaultPageSize' => 50,
                     'visibleColumns'  => [
                         'checkbox',
