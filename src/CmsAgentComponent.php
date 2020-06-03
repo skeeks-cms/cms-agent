@@ -35,6 +35,12 @@ class CmsAgentComponent extends Component implements BootstrapInterface
     public $onHitsInterval = 60;
 
     /**
+     * @var string Custom php binary path for some hostings, defaults to common 'php'.
+     *             Used in console script to invoke separate process for each agent.
+     */
+    public $phpBin = 'php';
+
+    /**
      * @var int Maximum wait time for the agent
      */
     public $agentMaxExecuteTime = 7200; //2 hours
