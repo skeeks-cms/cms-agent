@@ -67,9 +67,14 @@ class ExecuteController extends Controller
         $this->stdout("------------------------------\n");
         $this->stdout(" > {$cmsAgent->name}\n");
 
-        $phpCmd = "php yii";
+        $phpBin = 'php';
+        if (!empty(\Yii::$app->cmsAgent->phpBin)) {
+            $phpBin = \Yii::$app->cmsAgent->phpBin;
+        }
+
+        $phpCmd = "{$phpBin} yii";
         if ($cmsAgent->cms_site_id) {
-            $phpCmd = "CMS_SITE={$cmsAgent->cms_site_id} php yii";
+            $phpCmd = "CMS_SITE={$cmsAgent->cms_site_id} {$phpBin} yii";
         }
         $result = \Yii::$app->console->execute("cd " . ROOT_DIR . "; {$phpCmd} " . $cmsAgent->name);
         $this->stdout($result . "\n");
