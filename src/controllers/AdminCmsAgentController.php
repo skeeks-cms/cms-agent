@@ -197,8 +197,6 @@ class AdminCmsAgentController extends BackendModelStandartController
 
             'is_period' => [
                 'class'      => BoolField::class,
-                'trueValue'  => 'Y',
-                'falseValue' => 'N',
                 'allowNull'  => false,
             ],
 

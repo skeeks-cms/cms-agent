@@ -91,7 +91,7 @@ class CmsAgentComponent extends Component implements BootstrapInterface
                 $agent = new CmsAgentModel();
                 $agent->name = $command->command;
                 $agent->agent_interval = $command->interval;
-                $agent->is_period = $command->is_period ? "Y" : "N";
+                $agent->is_period = $command->is_period;
                 $agent->description = $command->name;
                 $agent->save();
             }
