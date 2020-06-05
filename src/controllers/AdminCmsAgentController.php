@@ -120,11 +120,11 @@ class AdminCmsAgentController extends BackendModelStandartController
                         'next_exec_at',
 
                         'agent_interval',
-                        'active',
+                        'is_active',
                     ],
 
                     'columns' => [
-                        'active'       => [
+                        'is_active'       => [
                             'class' => BooleanColumn::class,
                         ],
                         'last_exec_at' => [
@@ -144,7 +144,7 @@ class AdminCmsAgentController extends BackendModelStandartController
 
                                 $result[] = $cmsAgentModel->description;
 
-                                if ($cmsAgentModel->isRunning) {
+                                if ($cmsAgentModel->is_running) {
                                     $result[] = \yii\helpers\Html::img(\skeeks\cms\agent\assets\CmsAgentAsset::getAssetUrl('loaders/loader.svg'), [
                                         'height' => '30',
                                     ]);
@@ -165,7 +165,7 @@ class AdminCmsAgentController extends BackendModelStandartController
             ],
 
             "activate-multi" => [
-                'class' => BackendModelMultiActivateAction::className(),
+                'class' => BackendModelMultiActivateAction::class,
             ],
 
             "inActivate-multi" => [
@@ -184,10 +184,8 @@ class AdminCmsAgentController extends BackendModelStandartController
                     'type' => DateControl::FORMAT_DATETIME,
                 ],
             ],
-            'active'       => [
+            'is_active'       => [
                 'class'      => BoolField::class,
-                'trueValue'  => 'Y',
-                'falseValue' => 'N',
                 'allowNull'  => false,
             ],
             'name',

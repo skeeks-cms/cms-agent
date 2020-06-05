@@ -24,9 +24,9 @@ use yii\db\ActiveRecord;
  * @property string       $description
  * @property integer      $agent_interval
  * @property integer      $priority
- * @property string       $active
- * @property string       $is_period
- * @property string       $is_running
+ * @property integer       $is_active
+ * @property integer       $is_period
+ * @property integer       $is_running
  * @property integer|null $cms_site_id
  *
  * @property bool         $isRunning
@@ -41,17 +41,6 @@ class CmsAgentModel extends ActiveRecord
         return '{{%cms_agent}}';
     }
 
-    /**
-     * @return CmsActiveQuery
-     */
-    public static function find()
-    {
-        if (self::getTableSchema()->getColumn('is_active')) {
-            return new CmsActiveQuery(get_called_class(), ['is_active' => true]);
-        }
-
-        return new CmsActiveQuery(get_called_class(), ['is_active' => false]);
-    }
 
 
     /**
@@ -64,12 +53,11 @@ class CmsAgentModel extends ActiveRecord
             [['name'], 'required'],
             [['description'], 'string'],
             [['name'], 'string'],
-            [['active', 'is_period', 'is_running'], 'string', 'max' => 1],
-            [['active', 'is_period', 'is_running'], 'in', 'range' => array_keys(Yii::$app->cms->booleanFormat())],
+            [['is_active', 'is_period', 'is_running'], 'integer', 'max' => 1],
 
-            [['active'], 'default', 'value' => 'Y'],
-            [['is_period'], 'default', 'value' => 'N'],
-            [['is_running'], 'default', 'value' => 'N'],
+            [['is_active'], 'default', 'value' => 1],
+            [['is_period'], 'default', 'value' => 0],
+            [['is_running'], 'default', 'value' => 0],
             [['agent_interval'], 'default', 'value' => 86400],
             [['priority'], 'default', 'value' => 100],
             [
@@ -113,7 +101,7 @@ class CmsAgentModel extends ActiveRecord
             'name'           => Yii::t('skeeks/agent', "Agent's Function"),
             'agent_interval' => Yii::t('skeeks/agent', 'Interval (sec)'),
             'priority'       => Yii::t('skeeks/agent', 'Priority'),
-            'active'         => Yii::t('skeeks/agent', 'Active'),
+            'is_active'         => Yii::t('skeeks/agent', 'Active'),
             'is_period'      => Yii::t('skeeks/agent', 'Periodic'),
             'is_running'     => Yii::t('skeeks/agent', 'Is Running'),
             'description'    => Yii::t('skeeks/agent', 'Description'),
@@ -126,7 +114,7 @@ class CmsAgentModel extends ActiveRecord
      */
     public function stop()
     {
-        $this->is_running = Cms::BOOL_N;
+        $this->is_running = 0;
         $this->next_exec_at = \Yii::$app->formatter->asTimestamp(time()) + (int)$this->agent_interval;
         $this->last_exec_at = \Yii::$app->formatter->asTimestamp(time());
         return $this->save();
@@ -147,7 +135,7 @@ class CmsAgentModel extends ActiveRecord
 
         $running = static::find()
             ->where([
-                'is_running' => Cms::BOOL_Y,
+                'is_running' => 1,
             ])
             ->orderBy('priority')
             ->all();;
@@ -181,21 +169,12 @@ class CmsAgentModel extends ActiveRecord
     {
         return static::find()->active()
             ->andWhere([
-                'is_running' => Cms::BOOL_N,
+                'is_running' => 0,
             ])
             ->andWhere([
                 '<=',
                 'next_exec_at',
                 \Yii::$app->formatter->asTimestamp(time()),
             ])->orderBy('priority');
-    }
-
-    /**
-     * Сейчас агент запущен?
-     * @return bool
-     */
-    public function getIsRunning()
-    {
-        return (bool)($this->is_running == 'Y');
     }
 }

@@ -53,13 +53,13 @@ class ExecuteController extends Controller
 
 
         //Если уже запщен, то не будем запускать еще раз.
-        if ($cmsAgent->is_running == Cms::BOOL_Y) {
+        if ($cmsAgent->is_running) {
             $this->stdout('Agent is already running: ' . $cmsAgent->name, Console::BOLD);
             return $this;
         }
 
         //Перед выполнением отмечаем что он сейчас выполняется.
-        $cmsAgent->is_running = Cms::BOOL_Y;
+        $cmsAgent->is_running = 1;
         $cmsAgent->save();
 
         $timeStart = $this->_microtimeFloat();
