@@ -31,7 +31,7 @@ use yii\db\ActiveRecord;
  *
  * @property bool         $isRunning
  */
-class CmsAgentModel extends ActiveRecord
+class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
 {
     /**
      * @inheritdoc
