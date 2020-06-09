@@ -14,16 +14,9 @@ return [
                     'other' => [
                         'items' => [
                             [
-                                "name" => ['skeeks/agent', "Agents"],
-                                "image"   => ['skeeks\cms\agent\assets\CmsAgentAsset', 'icons/clock.png'],
-
-                                'items' => [
-                                    [
-                                        "name" => ['skeeks/agent', "Agents"],
-                                        "url"   => ["cmsAgent/admin-cms-agent"],
-                                        "image"   => ['skeeks\cms\agent\assets\CmsAgentAsset', 'icons/clock.png'],
-                                    ],
-                                ],
+                                "name"  => ['skeeks/agent', "Agents"],
+                                "url"   => ["cmsAgent/admin-cms-agent"],
+                                "image" => ['skeeks\cms\agent\assets\CmsAgentAsset', 'icons/clock.png'],
                             ],
                         ],
                     ],
