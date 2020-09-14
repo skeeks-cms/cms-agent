@@ -12,6 +12,7 @@ use skeeks\cms\agent\models\CmsAgentModel;
 use skeeks\cms\helpers\FileHelper;
 use yii\base\BootstrapInterface;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\helpers\ArrayHelper;
 use yii\web\Application;
 use Yii;
@@ -91,9 +92,11 @@ class CmsAgentComponent extends Component implements BootstrapInterface
                 $agent = new CmsAgentModel();
                 $agent->name = $command->command;
                 $agent->agent_interval = $command->interval;
-                $agent->is_period = $command->is_period;
+                $agent->is_period = (int) $command->is_period;
                 $agent->description = $command->name;
-                $agent->save();
+                if (!$agent->save()) {
+                    throw new Exception(print_r($agent->errors, true));
+                }
             }
         }
 

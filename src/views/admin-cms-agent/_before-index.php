@@ -9,7 +9,7 @@
 
 $backend = \yii\helpers\Url::to(['load']);
 $backendStop = \yii\helpers\Url::to(['stop-executable']);
-
+/*print_r(\Yii::$app->cmsAgent->commands);die;*/
 $this->registerJs(<<<JS
 
 setInterval(function()  {
