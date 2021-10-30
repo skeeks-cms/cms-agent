@@ -37,6 +37,12 @@ class AdminCmsAgentController extends BackendModelStandartController
         $this->modelClassName = CmsAgentModel::className();
 
         $this->generateAccessActions = false;
+        $this->accessCallback = function () {
+            if (!\Yii::$app->skeeks->site->is_default) {
+                return false;
+            }
+            return \Yii::$app->user->can($this->uniqueId);
+        };
 
         parent::init();
     }
