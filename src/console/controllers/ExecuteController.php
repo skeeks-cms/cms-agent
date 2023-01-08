@@ -27,7 +27,7 @@ class ExecuteController extends Controller
     {
         $stoppedLong = CmsAgentModel::stopLongExecutable();
         if ($stoppedLong > 0) {
-            \Yii::warning('Agents stopped: ' . count($stoppedLong), 'skeeks/agent');
+            \Yii::warning('Agents stopped: ' . $stoppedLong, 'skeeks/agent');
         }
 
         $agents = CmsAgentModel::findForExecute()->all();
