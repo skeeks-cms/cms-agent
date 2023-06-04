@@ -4,9 +4,9 @@ return [
     'bootstrap' => ['cmsAgent'],
 
     'components' => [
-        'cmsAgent' => [
+        /*'cmsAgent' => [
             'onHitsEnabled' => true,
-        ],
+        ],*/
 
         'backendAdmin' => [
             'menu' => [
