@@ -47,7 +47,13 @@ $this->registerJs(<<<JS
         make: function()
         {
             var ajax = sx.ajax.preparePostQuery(this.get("backend"));
-            var rr = new sx.classes.AjaxHandlerStandartRespose(ajax);
+            var rr = new sx.classes.AjaxHandlerStandartRespose(ajax, {
+                'blockerSelector' : "body",
+                'enableBlocker': true,
+                'allowResponseSuccessMessage': true,
+                'allowResponseErrorMessage': true,
+                'ajaxExecuteErrorAllowMessage': true,
+            });
 
             rr.bind('error', function(e, data)
             {
@@ -106,7 +112,8 @@ JS
 
 
 
-<div class="row g-mb-10">
+<div class="alert alert-default">
+    <div class="row">
     <div class="col-md-12">
         <div class="pull-left">
             <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-stop\"></i> ".\Yii::t('skeeks/agent',
@@ -118,7 +125,7 @@ JS
 
         <div class="pull-right">
             <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-retweet\"></i> ".\Yii::t('skeeks/agent',
-                    'Find and download of files'), "#", [
+                    'Загрузить агенты'), "#", [
                 'class' => 'btn btn-primary sx-btn-make',
             ]); ?>
             <span class="sx-legend">
@@ -126,6 +133,7 @@ JS
                         class="sx-green"><?= count(\Yii::$app->cmsAgent->commands); ?></span>
                 </span>
         </div>
+    </div>
     </div>
 </div>
 

@@ -85,20 +85,35 @@ class CmsAgentComponent extends Component implements BootstrapInterface
              * @var CmsAgent $command
              */
             foreach ($this->commands as $command) {
-                if (CmsAgentModel::find()->where(['name' => $command->command])->one()) {
-                    continue;
+                $agent = CmsAgentModel::find()->where(['name' => $command->command])->one();
+                if ($agent) {
+                    //Будет обновлен
+                } else {
+                    $agent = new CmsAgentModel();
+                    $agent->name = $command->command;
                 }
-
-                $agent = new CmsAgentModel();
-                $agent->name = $command->command;
+                
                 $agent->agent_interval = $command->interval;
                 $agent->is_period = (int) $command->is_period;
                 $agent->description = $command->name;
+                $agent->is_system = 1;
                 if (!$agent->save()) {
                     throw new Exception(print_r($agent->errors, true));
                 }
             }
+
+            //Удалить лишние агенты
+            //Поиск системных агентов, которые есть в базе но больше нет в файлах.
+
+            if ($agents = CmsAgentModel::find()->where(['not in', 'name', ArrayHelper::map($this->commands, "command", "command")])->andWhere(['is_system' => 1])->all()) {
+                foreach ($agents as $agent)
+                {
+                    $agent->delete();
+                }
+            }
         }
+
+
 
         return $this;
     }

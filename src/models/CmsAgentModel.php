@@ -8,11 +8,8 @@
 
 namespace skeeks\cms\agent\models;
 
-use skeeks\cms\components\Cms;
-use skeeks\cms\query\CmsActiveQuery;
 use Yii;
 use yii\db\ActiveQuery;
-use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "{{%cms_agent}}".
@@ -24,9 +21,10 @@ use yii\db\ActiveRecord;
  * @property string       $description
  * @property integer      $agent_interval
  * @property integer      $priority
- * @property integer       $is_active
- * @property integer       $is_period
- * @property integer       $is_running
+ * @property integer      $is_active
+ * @property integer      $is_period
+ * @property integer      $is_running
+ * @property integer      $is_system
  * @property integer|null $cms_site_id
  *
  * @property bool         $isRunning
@@ -42,19 +40,19 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
     }
 
 
-
     /**
      * @inheritdoc
      */
     public function rules()
     {
         return [
-            [['last_exec_at', 'next_exec_at', 'agent_interval', 'priority'], 'integer'],
+            [['last_exec_at', 'next_exec_at', 'agent_interval', 'priority', 'is_system'], 'integer'],
             [['name'], 'required'],
             [['description'], 'string'],
             [['name'], 'string'],
             [['is_active', 'is_period', 'is_running'], 'integer', 'max' => 1],
 
+            [['is_system'], 'default', 'value' => 0],
             [['is_active'], 'default', 'value' => 1],
             [['is_period'], 'default', 'value' => 0],
             [['is_running'], 'default', 'value' => 0],
@@ -74,9 +72,9 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
                     return \Yii::$app->formatter->asTimestamp(time());
                 },
             ],
-            
+
             [['cms_site_id',], 'integer'],
-            
+
             [
                 'cms_site_id',
                 'default',
@@ -99,12 +97,13 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
             'last_exec_at'   => Yii::t('skeeks/agent', 'Last Execution At'),
             'next_exec_at'   => Yii::t('skeeks/agent', 'Next Execution At'),
             'name'           => Yii::t('skeeks/agent', "Agent's Function"),
-            'agent_interval' => Yii::t('skeeks/agent', 'Interval (sec)'),
-            'priority'       => Yii::t('skeeks/agent', 'Priority'),
-            'is_active'         => Yii::t('skeeks/agent', 'Active'),
+            'agent_interval' => "Интервал",
+            'priority'       => "Сортировка",
+            'is_active'      => Yii::t('skeeks/agent', 'Active'),
             'is_period'      => Yii::t('skeeks/agent', 'Periodic'),
             'is_running'     => Yii::t('skeeks/agent', 'Is Running'),
             'description'    => Yii::t('skeeks/agent', 'Description'),
+            'is_system'    => "Системный?",
         ];
     }
 

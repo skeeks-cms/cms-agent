@@ -18,8 +18,11 @@ use skeeks\cms\grid\BooleanColumn;
 use skeeks\cms\grid\DateTimeColumnData;
 use skeeks\cms\helpers\RequestResponse;
 use skeeks\cms\queryfilters\QueryFiltersEvent;
+use skeeks\cms\rbac\CmsManager;
 use skeeks\yii2\form\fields\BoolField;
+use skeeks\yii2\form\fields\NumberField;
 use skeeks\yii2\form\fields\TextareaField;
+use skeeks\yii2\form\fields\TextField;
 use skeeks\yii2\form\fields\WidgetField;
 use yii\base\Event;
 use yii\helpers\ArrayHelper;
@@ -33,16 +36,11 @@ class AdminCmsAgentController extends BackendModelStandartController
     public function init()
     {
         $this->name = \Yii::t('skeeks/agent', 'Agents');
-        $this->modelShowAttribute = "id";
-        $this->modelClassName = CmsAgentModel::className();
+        $this->modelShowAttribute = "name";
+        $this->modelClassName = CmsAgentModel::class;
 
         $this->generateAccessActions = false;
-        $this->accessCallback = function () {
-            if (!\Yii::$app->skeeks->site->is_default) {
-                return false;
-            }
-            return \Yii::$app->user->can($this->uniqueId);
-        };
+        $this->permissionName = CmsManager::PERMISSION_ROLE_ADMIN_ACCESS;
 
         parent::init();
     }
@@ -65,6 +63,7 @@ class AdminCmsAgentController extends BackendModelStandartController
                 "filters"         => [
                     'visibleFilters' => [
                         'q',
+                        'is_system',
                     ],
 
                     'filtersModel' => [
@@ -78,6 +77,31 @@ class AdminCmsAgentController extends BackendModelStandartController
 
 
                         'fields' => [
+                            'is_system' => [
+                                'class' => BoolField::class,
+                                'formElement' => BoolField::ELEMENT_LISTBOX,
+                                'elementOptions' => [
+                                    'size' => 1
+                                ],
+                                'on apply'       => function (QueryFiltersEvent $e) {
+                                    /**
+                                     * @var $query ActiveQuery
+                                     */
+                                    $query = $e->dataProvider->query;
+
+                                    if ($e->field->value == '1') {
+                                        $query->andWhere(
+                                            [CmsAgentModel::tableName().'.is_system' => 1],
+                                        );
+                                    }
+                                    if ($e->field->value == '0') {
+                                        $query->andWhere(
+                                            [CmsAgentModel::tableName().'.is_system' => 0],
+                                        );
+                                    }
+                                },
+                                //'allowNull' => false
+                            ],
                             'q' => [
                                 'label'          => 'Поиск',
                                 'elementOptions' => [
@@ -127,10 +151,14 @@ class AdminCmsAgentController extends BackendModelStandartController
 
                         'agent_interval',
                         'is_active',
+                        'is_system',
                     ],
 
                     'columns' => [
-                        'is_active'       => [
+                        'is_active'    => [
+                            'class' => BooleanColumn::class,
+                        ],
+                        'is_system'    => [
                             'class' => BooleanColumn::class,
                         ],
                         'last_exec_at' => [
@@ -180,8 +208,18 @@ class AdminCmsAgentController extends BackendModelStandartController
         ]);
     }
 
-    public function updateFields()
+    public function updateFields($action)
     {
+        /**
+         * @var $model CmsAgentModel
+         */
+        $model = $action->model;
+
+        $options = [];
+        if ($model->is_system) {
+            $options['disabled'] = "disabled";
+        }
+
         return [
             'next_exec_at' => [
                 'class'        => WidgetField::class,
@@ -190,23 +228,34 @@ class AdminCmsAgentController extends BackendModelStandartController
                     'type' => DateControl::FORMAT_DATETIME,
                 ],
             ],
-            'is_active'       => [
-                'class'      => BoolField::class,
-                'allowNull'  => false,
+            'is_active'    => [
+                'class'     => BoolField::class,
+                'allowNull' => false,
             ],
-            'name',
+
+            'name' => [
+                'class' => TextField::class,
+                'elementOptions' => $options
+            ],
 
             'description' => [
                 'class' => TextareaField::class,
-            ],
-            'priority',
-
-            'is_period' => [
-                'class'      => BoolField::class,
-                'allowNull'  => false,
+                'elementOptions' => $options
             ],
 
-            'agent_interval',
+            /*'is_period' => [
+                'class'     => BoolField::class,
+                'allowNull' => false,
+            ],*/
+
+            'agent_interval' => [
+                'class' => NumberField::class,
+                'append' => "сек.",
+                'elementOptions' => $options
+            ],
+            /*'priority' => [
+                'class' => NumberField::class,
+            ],*/
         ];
     }
 
