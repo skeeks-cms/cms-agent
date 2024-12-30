@@ -50,11 +50,15 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
             [['name'], 'required'],
             [['description'], 'string'],
             [['name'], 'string'],
-            [['is_active', 'is_period', 'is_running'], 'integer', 'max' => 1],
+
+            [['is_active', 'is_period', 'is_running'], 'integer'
+            //    , 'max' => 1
+            ],
 
             [['is_system'], 'default', 'value' => 0],
             [['is_active'], 'default', 'value' => 1],
             [['is_period'], 'default', 'value' => 0],
+
             [['is_running'], 'default', 'value' => 0],
             [['agent_interval'], 'default', 'value' => 86400],
             [['priority'], 'default', 'value' => 100],
