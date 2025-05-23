@@ -19,6 +19,7 @@ use skeeks\cms\grid\DateTimeColumnData;
 use skeeks\cms\helpers\RequestResponse;
 use skeeks\cms\queryfilters\QueryFiltersEvent;
 use skeeks\cms\rbac\CmsManager;
+use skeeks\cms\widgets\formInputs\SmartDurationInputWidget;
 use skeeks\yii2\form\fields\BoolField;
 use skeeks\yii2\form\fields\NumberField;
 use skeeks\yii2\form\fields\TextareaField;
@@ -249,9 +250,12 @@ class AdminCmsAgentController extends BackendModelStandartController
             ],*/
 
             'agent_interval' => [
-                'class' => NumberField::class,
-                'append' => "сек.",
-                'elementOptions' => $options
+                'class'  => WidgetField::class,
+                'widgetClass' => SmartDurationInputWidget::class,
+                'widgetConfig' => [
+                    'wrapperOptions' => $options
+                ],
+                
             ],
             /*'priority' => [
                 'class' => NumberField::class,
