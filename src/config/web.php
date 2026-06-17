@@ -16,7 +16,7 @@ return [
                             [
                                 "name"  => ['skeeks/agent', "Agents"],
                                 "url"   => ["cmsAgent/admin-cms-agent"],
-                                "image" => ['skeeks\cms\agent\assets\CmsAgentAsset', 'icons/clock.png'],
+                                "image" => ['\skeeks\cms\assets\CmsAsset', 'images/icons/admin-menu/agent.svg'],
                             ],
                         ],
                     ],
