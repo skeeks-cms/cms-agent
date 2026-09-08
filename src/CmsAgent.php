@@ -51,8 +51,8 @@ class CmsAgent extends Component
     public function init()
     {
 
-        if (!$this->command) {
-            throw new InvalidConfigException('Property command is required!');
+        if (!$this->command && !$this->jobType) {
+            throw new InvalidConfigException('Either command or jobType is required.');
         }
 
         if (!$this->interval || !is_int($this->interval)) {

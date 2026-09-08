@@ -1,6 +1,16 @@
 CHANGELOG
 ==============
 
+3.2.0 — 2026-09-08
+-----------------
+ * Native job schedules via cmsAgent.jobs, without a console command.
+ * Standard admin form, schedule card and list support job types and JSON parameters.
+ * Job registry and permission validation; safe handling of unavailable job types.
+ * System schedule fields are protected; unavailable schedules can still be disabled.
+ * Transactional, site-scoped synchronization of configured schedules.
+ * Existing console commands and queue bridges remain supported.
+ * Added 28 isolated native-schedule regression checks.
+
 2.0.0
 -----------------
  * Ready

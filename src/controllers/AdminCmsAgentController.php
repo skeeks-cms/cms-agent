@@ -25,6 +25,7 @@ use skeeks\cms\rbac\CmsManager;
 use skeeks\cms\widgets\formInputs\SmartDurationInputWidget;
 use skeeks\yii2\form\fields\BoolField;
 use skeeks\yii2\form\fields\NumberField;
+use skeeks\yii2\form\fields\SelectField;
 use skeeks\yii2\form\fields\TextareaField;
 use skeeks\yii2\form\fields\TextField;
 use skeeks\yii2\form\fields\WidgetField;
@@ -40,7 +41,7 @@ class AdminCmsAgentController extends BackendModelStandartController
     public function init()
     {
         $this->name = \Yii::t('skeeks/agent', 'Agents');
-        $this->modelShowAttribute = "name";
+        $this->modelShowAttribute = 'displayName';
         $this->modelClassName = CmsAgentModel::class;
 
         $this->generateAccessActions = false;
@@ -129,6 +130,7 @@ class AdminCmsAgentController extends BackendModelStandartController
                                             'or',
                                             ['like', CmsAgentModel::tableName().'.name', $e->field->value],
                                             ['like', CmsAgentModel::tableName().'.description', $e->field->value],
+                                            ['like', CmsAgentModel::tableName().'.job_type', $e->field->value],
                                         ]);
 
                                         $query->groupBy([CmsAgentModel::tableName().'.id']);
@@ -175,13 +177,10 @@ class AdminCmsAgentController extends BackendModelStandartController
                             },
                         ],
                         'job' => [
-                            'label' => 'Фоновое задание', 'format' => 'raw',
+                            'label' => 'Запуск', 'format' => 'raw',
                             'value' => function (CmsAgentModel $model) {
                                 if (!$model->isJobBased) { return 'Прямой запуск по расписанию'; }
-                                return \skeeks\cms\job\widgets\JobButton::widget([
-                                    'startUrl' => ['start-job', 'id' => $model->id],
-                                    'statusUrl' => ['job-status', 'id' => $model->id],
-                                ]);
+                                return $this->renderJobButton($model);
                             },
                         ],
                         'is_active'    => [
@@ -205,15 +204,18 @@ class AdminCmsAgentController extends BackendModelStandartController
                             'label' => 'Расписание',
                             'content' => function (CmsAgentModel $cmsAgentModel) {
                                 $result = [];
-                                $result[] = Html::tag('span', Html::encode($cmsAgentModel->name), [
+                                $result[] = Html::tag('span', Html::encode($cmsAgentModel->displayName), [
                                     'class' => 'sx-collection-cell__primary',
                                 ]);
 
-                                $result[] = Html::tag('span', Html::encode($cmsAgentModel->description), [
+                                $detail = $cmsAgentModel->isJobBased
+                                    ? 'Задание: '.($cmsAgentModel->effectiveJobType ?: 'тип не задан')
+                                    : 'Команда: '.$cmsAgentModel->name;
+                                $result[] = Html::tag('span', Html::encode($detail), [
                                     'class' => 'sx-collection-cell__secondary',
                                 ]);
 
-                                if ($cmsAgentModel->is_running) {
+                                if (!$cmsAgentModel->isJobBased && $cmsAgentModel->is_running) {
                                     $result[] = \yii\helpers\Html::img(\skeeks\cms\agent\assets\CmsAgentAsset::getAssetUrl('loaders/loader.svg'), [
                                         'height' => '30',
                                     ]);
@@ -285,28 +287,34 @@ class AdminCmsAgentController extends BackendModelStandartController
     public function scheduleAttributes(BackendModelViewAction $action): array
     {
         $model = $action->model;
+        $definition = $this->jobDefinition($model);
         return [
             [
                 'label' => 'Ручной запуск',
                 'format' => 'raw',
                 'visible' => $model->isJobBased,
                 'value' => function (CmsAgentModel $agent) {
-                    return \skeeks\cms\job\widgets\JobButton::widget([
-                        'startUrl' => ['start-job', 'id' => $agent->id],
-                        'statusUrl' => ['job-status', 'id' => $agent->id],
-                    ]);
+                    return $this->renderJobButton($agent);
                 },
             ],
-            ['attribute' => 'name', 'label' => 'Консольная команда'],
+            ['attribute' => 'name', 'label' => $model->isJobBased ? 'Название / код расписания' : 'Консольная команда'],
             'description:ntext',
             ['attribute' => 'agent_interval', 'format' => 'raw', 'value' => $this->renderInterval($model)],
             'is_active:boolean',
             'is_system:boolean',
             ['label' => 'Способ запуска', 'value' => $model->isJobBased ? 'Через очередь' : 'Прямой запуск консольной команды'],
-            ['label' => 'Тип фонового задания', 'value' => $model->effectiveJobType ?: '—'],
+            ['label' => 'Тип фонового задания', 'visible' => $model->isJobBased,
+                'value' => $definition ? ($definition->title ?: $definition->type).' ('.$definition->type.')' : ($model->effectiveJobType ?: 'Не задан')],
+            ['label' => 'Очередь', 'visible' => $model->isJobBased, 'value' => $definition ? $definition->queue : 'Тип задания недоступен'],
+            ['label' => 'Параметры задания', 'visible' => $model->isJobBased, 'format' => 'raw',
+                'value' => function (CmsAgentModel $agent) {
+                    try {
+                        return Html::tag('pre', Html::encode(\yii\helpers\Json::encode((object)$agent->effectiveJobPayload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)));
+                    } catch (\InvalidArgumentException $error) { return Html::encode($error->getMessage()); }
+                }],
             ['attribute' => 'last_exec_at', 'format' => 'datetime', 'value' => $model->last_exec_at ?: null],
             ['attribute' => 'next_exec_at', 'format' => 'datetime', 'value' => $model->next_exec_at ?: null],
-            ['label' => 'Прямой процесс запущен', 'value' => $model->isJobBased ? 'Не используется при работе через очередь' : ($model->is_running ? 'Да' : 'Нет')],
+            ['label' => 'Прямой процесс запущен', 'visible' => !$model->isJobBased, 'value' => $model->is_running ? 'Да' : 'Нет'],
             ['label' => 'Учёт запусков', 'value' => $model->isJobBased
                 ? 'Даты расписания не означают завершение работы. Статус и результат смотрите во вкладке «Фоновые задания».'
                 : 'Результаты прямых консольных запусков не сохраняются в истории фоновых заданий.'],
@@ -320,12 +328,81 @@ class AdminCmsAgentController extends BackendModelStandartController
          */
         $model = $action->model;
 
+        if ($model->isNewRecord && !\Yii::$app->request->isPost && \Yii::$app->has('jobs')) {
+            $model->executionMode = 'job';
+        }
+        $types = [];
+        if (\Yii::$app->has('jobs')) {
+            foreach (\Yii::$app->jobs->getRegistry()->all() as $type => $definition) {
+                if (!$definition->permission || \Yii::$app->user->can($definition->permission)) {
+                    $types[$type] = ($definition->title ?: $type).' — '.$type.' ['.$definition->queue.']';
+                }
+            }
+        }
+        if ($model->job_type && !isset($types[$model->job_type])) {
+            $types[$model->job_type] = $model->job_type.' — недоступен';
+        }
+        $modeId = \yii\helpers\Json::encode(Html::getInputId($model, 'executionMode'));
+        // Fields live in the current standard form, including when opened in a drawer.
+        $this->view->registerJs(<<<JS
+(function () {
+    var mode = document.getElementById($modeId);
+    if (!mode || mode.dataset.sxAgentBound) return;
+    mode.dataset.sxAgentBound = '1';
+    var form = mode.closest('form');
+    if (!form) return;
+    function update() {
+        var job = mode.value === 'job';
+        form.querySelectorAll('[data-sx-agent-job-field]').forEach(function (field) { field.hidden = !job; });
+        var label = form.querySelector('[data-sx-agent-name-label]');
+        if (label) label.textContent = job ? 'Название расписания' : 'Консольная команда';
+        var hint = form.querySelector('[data-sx-agent-name-hint]');
+        if (hint) hint.textContent = job ? 'Понятное название этого расписания.' : 'Маршрут консольной команды, при необходимости с аргументами. Без php yii.';
+    }
+    jQuery(mode).on('change.cmsAgent', update);
+    update();
+})();
+JS
+        );
+
         $options = [];
         if ($model->is_system) {
             $options['disabled'] = "disabled";
         }
+        $payloadOptions = array_merge(['rows' => 5, 'placeholder' => '{}'], $options);
+        if ($model->is_system && $model->isJobBased) {
+            try {
+                $payloadOptions['value'] = \yii\helpers\Json::encode((object)$model->effectiveJobPayload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            } catch (\InvalidArgumentException $error) { $payloadOptions['value'] = (string)$model->job_payload; }
+        }
 
         return [
+            'executionMode' => [
+                'class' => SelectField::class,
+                'allowNull' => false,
+                'items' => ['job' => 'Фоновое задание (через очередь)', 'console' => 'Консольная команда (прямой запуск)'],
+                'elementOptions' => $options,
+                'hint' => $model->is_system ? 'Системное расписание: тип запуска и параметры задаются пакетом.' : 'Для выполнения фоновых заданий нужен работающий воркер.',
+            ],
+            'job_type' => $model->is_system ? [
+                'class' => TextField::class,
+                'elementOptions' => ['disabled' => true, 'value' => $model->effectiveJobType ?: 'Не задан'],
+                'options' => ['options' => ['class' => 'form-group', 'data-sx-agent-job-field' => true]],
+                'hint' => ($definition = $this->jobDefinition($model)) ? 'Очередь: '.Html::encode($definition->queue) : 'Тип задания недоступен.',
+            ] : [
+                'class' => SelectField::class,
+                'nullLabel' => 'Выберите тип задания',
+                'items' => $types,
+                'elementOptions' => $options,
+                'options' => ['options' => ['class' => 'form-group', 'data-sx-agent-job-field' => true]],
+                'hint' => 'Очередь указана в квадратных скобках и определяется типом задания.',
+            ],
+            'job_payload' => [
+                'class' => TextareaField::class,
+                'elementOptions' => $payloadOptions,
+                'options' => ['options' => ['class' => 'form-group', 'data-sx-agent-job-field' => true]],
+                'hint' => 'JSON-объект с параметрами обработчика. Если параметры не нужны, оставьте поле пустым. Параметры системного задания смотрите в карточке.',
+            ],
             'next_exec_at' => [
                 'class'        => WidgetField::class,
                 'widgetClass'  => DateControl::class,
@@ -340,6 +417,10 @@ class AdminCmsAgentController extends BackendModelStandartController
 
             'name' => [
                 'class' => TextField::class,
+                'label' => $model->executionMode === 'job' ? 'Название расписания' : 'Консольная команда',
+                'labelOptions' => ['data-sx-agent-name-label' => true],
+                'hint' => 'Понятное название расписания или маршрут консольной команды.',
+                'hintOptions' => ['data-sx-agent-name-hint' => true],
                 'elementOptions' => $options
             ],
 
@@ -353,7 +434,11 @@ class AdminCmsAgentController extends BackendModelStandartController
                 'allowNull' => false,
             ],*/
 
-            'agent_interval' => [
+            'agent_interval' => $model->is_system ? [
+                'class' => TextField::class,
+                'elementOptions' => ['disabled' => true, 'value' => \Yii::$app->formatter->asDuration((int)$model->agent_interval)],
+                'hint' => 'Интервал системного расписания задаётся в конфигурации пакета.',
+            ] : [
                 'class'  => WidgetField::class,
                 'widgetClass' => SmartDurationInputWidget::class,
                 'widgetConfig' => [
@@ -380,6 +465,24 @@ class AdminCmsAgentController extends BackendModelStandartController
             $rr->success = true;
             return $rr;
         }
+    }
+
+    protected function jobDefinition(CmsAgentModel $agent)
+    {
+        if (!\Yii::$app->has('jobs') || !$agent->effectiveJobType) { return null; }
+        $registry = \Yii::$app->jobs->getRegistry();
+        return $registry->has($agent->effectiveJobType) ? $registry->get($agent->effectiveJobType) : null;
+    }
+
+    protected function renderJobButton(CmsAgentModel $agent)
+    {
+        $definition = $this->jobDefinition($agent);
+        if (!$definition) { return 'Задание недоступно: проверьте тип и подключение cms-job.'; }
+        if ($definition->permission && !\Yii::$app->user->can($definition->permission)) { return 'Нет права запуска'; }
+        return \skeeks\cms\job\widgets\JobButton::widget([
+            'startUrl' => ['start-job', 'id' => $agent->id],
+            'statusUrl' => ['job-status', 'id' => $agent->id],
+        ]);
     }
 
     /** Resolve on the server; a URL id must never cross the active site boundary. */

@@ -35,6 +35,48 @@ use yii\db\ActiveQuery;
  */
 class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
 {
+    const SCENARIO_CONFIG = 'config';
+    private $_executionMode;
+
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios[self::SCENARIO_CONFIG] = $scenarios[self::SCENARIO_DEFAULT];
+        return $scenarios;
+    }
+
+    public function getExecutionMode()
+    {
+        return $this->_executionMode ?? ($this->getEffectiveJobType() || strpos((string)$this->name, 'job:') === 0 ? 'job' : 'console');
+    }
+
+    public function setExecutionMode($value) { $this->_executionMode = $value; }
+
+    public function validateExecutionMode($attribute)
+    {
+        if ($this->_executionMode === 'console') {
+            // A package-owned bridge must not silently change its execution path.
+            if ($this->is_system && $this->getEffectiveJobType()) {
+                $this->addError($attribute, 'Способ запуска системного расписания задаётся в конфигурации пакета.');
+                return;
+            }
+            $this->job_type = null;
+            $this->job_payload = null;
+        }
+        if ($this->scenario !== self::SCENARIO_CONFIG && !$this->isNewRecord && $this->getOldAttribute('is_system') && Yii::$app instanceof \yii\web\Application) {
+            foreach (['name', 'description', 'job_type', 'job_payload', 'agent_interval', 'is_system'] as $field) {
+                if ((string)$this->$field !== (string)$this->getOldAttribute($field)) {
+                    $this->addError($field, 'Системное расписание изменяется в конфигурации пакета.');
+                }
+            }
+        }
+    }
+
+    public function getDisplayName()
+    {
+        return $this->description ?: $this->name;
+    }
+
     /**
      * @inheritdoc
      */
@@ -50,6 +92,8 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
     public function rules()
     {
         return [
+            ['executionMode', 'in', 'range' => ['console', 'job'], 'skipOnEmpty' => false],
+            ['executionMode', 'validateExecutionMode', 'skipOnEmpty' => false],
             [['last_exec_at', 'next_exec_at', 'agent_interval', 'priority', 'is_system'], 'integer'],
             [['name'], 'required'],
             [['description'], 'string'],
@@ -86,6 +130,8 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
             [['job_type'], 'string', 'max' => 128],
             [['job_payload'], 'string'],
             [['job_type', 'job_payload'], 'default', 'value' => null],
+            ['job_type', 'validateJobConfiguration', 'skipOnEmpty' => false],
+            ['job_payload', 'validateJobPayload', 'skipOnEmpty' => false],
 
             [
                 'cms_site_id',
@@ -106,7 +152,41 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
      */
     public function getIsJobBased()
     {
-        return (bool)$this->getEffectiveJobType() && \Yii::$app->has('jobs');
+        // Never fall back to executing a job schedule's name as a shell command.
+        return $this->_executionMode === 'job' || (bool)$this->getEffectiveJobType() || strpos((string)$this->name, 'job:') === 0;
+    }
+
+    public function validateJobConfiguration($attribute): void
+    {
+        if (!$this->isJobBased) { return; }
+        if ($this->isDisablingUnchangedJob()) { return; }
+        if (!\Yii::$app->has('jobs')) {
+            $this->addError($attribute, 'Для этого расписания требуется пакет cms-job.'); return;
+        }
+        $registry = \Yii::$app->jobs->getRegistry();
+        if (!$registry->has($this->effectiveJobType)) {
+            $this->addError($attribute, 'Выберите зарегистрированный тип задания.'); return;
+        }
+        $permission = $registry->get($this->effectiveJobType)->permission;
+        if ($this->scenario !== self::SCENARIO_CONFIG && \Yii::$app instanceof \yii\web\Application && $permission && !\Yii::$app->user->can($permission)) {
+            $this->addError($attribute, 'Нет права запуска выбранного типа задания.');
+        }
+    }
+
+    public function validateJobPayload($attribute): void
+    {
+        if (!$this->isJobBased || $this->isDisablingUnchangedJob()) { return; }
+        try { $this->getJobPayload(); }
+        catch (\InvalidArgumentException $error) { $this->addError($attribute, $error->getMessage()); }
+    }
+
+    private function isDisablingUnchangedJob(): bool
+    {
+        if ($this->isNewRecord || (int)$this->is_active !== 0) { return false; }
+        foreach (['name', 'job_type', 'job_payload'] as $field) {
+            if ((string)$this->$field !== (string)$this->getOldAttribute($field)) { return false; }
+        }
+        return true;
     }
 
     public function getEffectiveJobType()
@@ -152,17 +232,20 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
      */
     public function getJobPayload()
     {
-        if (!$this->job_payload) {
+        if ($this->job_payload === null || $this->job_payload === '') {
             return [];
         }
 
         try {
             $data = \yii\helpers\Json::decode((string)$this->job_payload);
         } catch (\Exception $e) {
-            return [];
+            throw new \InvalidArgumentException('Параметры задания должны содержать корректный JSON-объект.');
         }
 
-        return is_array($data) ? $data : [];
+        if (!is_array($data) || substr(ltrim((string)$this->job_payload), 0, 1) !== '{') {
+            throw new \InvalidArgumentException('Параметры задания должны быть JSON-объектом, например {"site_id": 123}.');
+        }
+        return $data;
     }
 
     /**
@@ -170,7 +253,7 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
      */
     public function setJobPayload(array $value)
     {
-        $this->job_payload = $value ? \yii\helpers\Json::encode($value) : null;
+        $this->job_payload = $value ? \yii\helpers\Json::encode((object)$value) : null;
 
         return $this;
     }
@@ -191,6 +274,9 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
      */
     public function pushJob($manual = false)
     {
+        if (!\Yii::$app->has('jobs') || !$this->effectiveJobType) {
+            throw new \yii\base\InvalidConfigException('Для расписания не настроен cms-job или тип задания.');
+        }
         return \Yii::$app->jobs->push($this->effectiveJobType, $this->effectiveJobPayload, [
             'title' => $this->description ? $this->description : $this->name,
             'siteId' => $this->cms_site_id,
@@ -210,7 +296,10 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
             'id'             => Yii::t('skeeks/agent', 'ID'),
             'last_exec_at'   => Yii::t('skeeks/agent', 'Last Execution At'),
             'next_exec_at'   => Yii::t('skeeks/agent', 'Next Execution At'),
-            'name'           => Yii::t('skeeks/agent', "Agent's Function"),
+            'name'           => 'Название расписания / консольная команда',
+            'executionMode'  => 'Способ запуска',
+            'job_type'       => 'Тип фонового задания',
+            'job_payload'    => 'Параметры задания (JSON)',
             'agent_interval' => "Интервал",
             'priority'       => "Сортировка",
             'is_active'      => Yii::t('skeeks/agent', 'Active'),
@@ -230,7 +319,7 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
         $this->is_running = 0;
         $this->next_exec_at = \Yii::$app->formatter->asTimestamp(time()) + (int)$this->agent_interval;
         $this->last_exec_at = \Yii::$app->formatter->asTimestamp(time());
-        return $this->save();
+        return $this->save(false, ['is_running', 'next_exec_at', 'last_exec_at']);
     }
 
     /**

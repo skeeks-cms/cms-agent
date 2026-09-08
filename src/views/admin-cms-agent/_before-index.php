@@ -130,10 +130,9 @@ JS
             ]); ?>
             <span class="sx-legend">
                     <?= \Yii::t('skeeks/agent', 'Found agents'); ?> <span
-                        class="sx-green"><?= count(\Yii::$app->cmsAgent->commands); ?></span>
+                        class="sx-green"><?= count(\Yii::$app->cmsAgent->commands) + count(\Yii::$app->cmsAgent->jobs); ?></span>
                 </span>
         </div>
     </div>
     </div>
 </div>
-

@@ -107,7 +107,7 @@ class ExecuteController extends Controller
     protected function _pushAgentJob(CmsAgentModel $cmsAgent)
     {
         $this->stdout("------------------------------\n");
-        $this->stdout(" > {$cmsAgent->name} (задание {$cmsAgent->job_type})\n");
+        $this->stdout(" > {$cmsAgent->name} (задание {$cmsAgent->effectiveJobType})\n");
 
         try {
             $run = $cmsAgent->pushJob();

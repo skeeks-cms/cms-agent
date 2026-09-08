@@ -81,6 +81,55 @@ How to enable execution on cron agents
 
 
 
+Native job schedules
+--------------------
+
+With `skeeks/cms-job` installed, a schedule can enqueue a registered job
+directly, without a console command. In the standard admin form select
+«Фоновое задание», choose a registered type and supply a JSON object of
+handler parameters (or leave it empty). The queue belongs to the job type,
+not to the schedule. A worker is required to execute queued work.
+
+Packages register system schedules under `cmsAgent.jobs` using a stable code:
+
+```php
+'components' => [
+    'cmsAgent' => [
+        'jobs' => [
+            'daily-export' => [
+                'jobType' => 'my.export', // Must exist in jobRegistry.types.
+                'name' => 'Daily export',
+                'interval' => 86400,
+                'jobPayload' => ['catalog_id' => 123],
+            ],
+        ],
+    ],
+],
+```
+
+«Загрузить агенты» synchronizes these records as `job:<code>` within the
+current CMS site. The code is the persistent schedule identity; changing it
+creates a different schedule. System fields are edited in package config,
+not the admin form. No new schema migration is needed beyond the existing
+`job_type` / `job_payload` migration.
+
+Existing `cmsAgent.commands` (including their optional `jobType` bridge)
+remain supported. Unknown job types and missing `cms-job` fail closed: the
+schedule name is never executed as a console command. An existing broken
+schedule can still be disabled without changing its job configuration.
+
+Manual and scheduled pushes use the same deduplication key and `skip`
+overlap policy. Manual start does not change the next scheduled time.
+The standard card and related run-history tab separate schedule timestamps
+from job execution state. Job-type permissions are enforced by validation
+and the manual-start endpoint.
+
+Run isolated checks (SQLite in memory, no project configuration loaded):
+
+```bash
+SKEEKS_APP_ROOT=/app php vendor/skeeks/cms-agent/tests/native-schedules-smoke.php
+```
+
 Links
 ------
 * [Web site](https://cms.skeeks.com)
