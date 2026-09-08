@@ -24,6 +24,12 @@ class CmsAgent extends Component
      */
     public $command;
 
+    /** @var string|null Optional configured queue job replacing this command. */
+    public $jobType;
+
+    /** @var array Trusted, server-configured job parameters. */
+    public $jobPayload = [];
+
     /**
      * @var integer
      */

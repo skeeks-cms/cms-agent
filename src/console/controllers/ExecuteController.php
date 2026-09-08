@@ -50,7 +50,12 @@ class ExecuteController extends Controller
      */
     protected function _executeAgent(CmsAgentModel $cmsAgent)
     {
-
+        //Агент с типом задания ничего не выполняет сам: он ставит такое же
+        //задание, какое создаёт кнопка в интерфейсе, и сразу освобождается.
+        //Пересечения решает политика очереди, а не флаг is_running.
+        if ($cmsAgent->isJobBased) {
+            return $this->_pushAgentJob($cmsAgent);
+        }
 
         //Если уже запщен, то не будем запускать еще раз.
         if ($cmsAgent->is_running) {
@@ -88,6 +93,45 @@ class ExecuteController extends Controller
 
         \Yii::info("Execute agent > {$cmsAgent->name}\n{$result}\nLead time > {$time} sec",
             'skeeks/agent::' . $cmsAgent->name);
+
+        $cmsAgent->stop();
+
+        return $this;
+    }
+
+    /**
+     * Поставить фоновое задание вместо запуска команды.
+     *
+     * @return $this
+     */
+    protected function _pushAgentJob(CmsAgentModel $cmsAgent)
+    {
+        $this->stdout("------------------------------\n");
+        $this->stdout(" > {$cmsAgent->name} (задание {$cmsAgent->job_type})\n");
+
+        try {
+            $run = $cmsAgent->pushJob();
+        } catch (\Throwable $e) {
+            \Yii::error(
+                "Не удалось поставить задание агента {$cmsAgent->name}: ".$e->getMessage(),
+                'skeeks/agent'
+            );
+            $this->stdout("Ошибка постановки: {$e->getMessage()}\n", Console::FG_RED);
+
+            //Расписание сдвигаем в любом случае, иначе агент будет пытаться
+            //каждую минуту и засорять журнал одной и той же ошибкой.
+            $cmsAgent->stop();
+
+            return $this;
+        }
+
+        if ($run) {
+            $this->stdout("Поставлено задание #{$run->id}\n", Console::FG_GREEN);
+        } else {
+            //Не ошибка: предыдущее задание ещё выполняется. Факт пропуска
+            //зафиксирован счётчиком на активном прогоне.
+            $this->stdout("Пропущено: предыдущее задание ещё выполняется\n", Console::FG_YELLOW);
+        }
 
         $cmsAgent->stop();
 

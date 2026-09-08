@@ -26,8 +26,12 @@ use yii\db\ActiveQuery;
  * @property integer      $is_running
  * @property integer      $is_system
  * @property integer|null $cms_site_id
+ * @property string|null  $job_type
+ * @property string|null  $job_payload
  *
  * @property bool         $isRunning
+ * @property array        $jobPayload
+ * @property bool         $isJobBased
  */
 class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
 {
@@ -79,6 +83,10 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
 
             [['cms_site_id',], 'integer'],
 
+            [['job_type'], 'string', 'max' => 128],
+            [['job_payload'], 'string'],
+            [['job_type', 'job_payload'], 'default', 'value' => null],
+
             [
                 'cms_site_id',
                 'default',
@@ -89,6 +97,108 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
                 },
             ],
         ];
+    }
+
+    /**
+     * Создаёт ли этот агент фоновое задание вместо запуска команды.
+     *
+     * @return bool
+     */
+    public function getIsJobBased()
+    {
+        return (bool)$this->getEffectiveJobType() && \Yii::$app->has('jobs');
+    }
+
+    public function getEffectiveJobType()
+    {
+        if ($this->job_type) { return $this->job_type; }
+        $component = \Yii::$app->get('cmsAgent', false);
+        $command = $component ? ($component->commands[$this->name] ?? null) : null;
+        return is_array($command) ? ($command['jobType'] ?? null)
+            : ($command instanceof \skeeks\cms\agent\CmsAgent ? $command->jobType : null);
+    }
+
+    public function getEffectiveJobPayload(): array
+    {
+        if ($this->job_type) { return $this->jobPayload; }
+        $component = \Yii::$app->get('cmsAgent', false);
+        $command = $component ? ($component->commands[$this->name] ?? null) : null;
+        return is_array($command) ? (array)($command['jobPayload'] ?? [])
+            : ($command instanceof \skeeks\cms\agent\CmsAgent ? $command->jobPayload : []);
+    }
+
+    public function getJobDedupKey()
+    {
+        $definition = \Yii::$app->jobs->getRegistry()->get($this->effectiveJobType);
+        $run = new \skeeks\cms\job\models\CmsJobRun([
+            'job_type' => $this->effectiveJobType, 'cms_site_id' => $this->cms_site_id,
+        ]);
+        $run->setPayload($this->effectiveJobPayload);
+        if (is_callable($definition->dedupKey)) {
+            $key = call_user_func($definition->dedupKey, $this->effectiveJobPayload, $run);
+            if ($key) { return $key; }
+        }
+        return 'cms_agent:'.$this->id;
+    }
+
+    public function getActiveJob()
+    {
+        return \skeeks\cms\job\models\CmsJobRun::find()
+            ->andWhere(['dedup_active' => $this->jobDedupKey])->one();
+    }
+
+    /**
+     * @return array
+     */
+    public function getJobPayload()
+    {
+        if (!$this->job_payload) {
+            return [];
+        }
+
+        try {
+            $data = \yii\helpers\Json::decode((string)$this->job_payload);
+        } catch (\Exception $e) {
+            return [];
+        }
+
+        return is_array($data) ? $data : [];
+    }
+
+    /**
+     * @return $this
+     */
+    public function setJobPayload(array $value)
+    {
+        $this->job_payload = $value ? \yii\helpers\Json::encode($value) : null;
+
+        return $this;
+    }
+
+    /**
+     * Поставить задание по расписанию.
+     *
+     * Расписание не выполняет тяжёлый код само: оно создаёт такое же задание,
+     * какое создаёт кнопка в интерфейсе.
+     *
+     * Политика `skip` с ключом по агенту решает давнюю проблему пересечений:
+     * прежний флаг `is_running` защищал строку только от самой себя, поэтому
+     * полное и инкрементальное обновление одного поставщика — разные строки —
+     * сталкивались на одних данных.
+     *
+     * @return \skeeks\cms\job\models\CmsJobRun|null null, если задание уже
+     *                                               выполняется
+     */
+    public function pushJob($manual = false)
+    {
+        return \Yii::$app->jobs->push($this->effectiveJobType, $this->effectiveJobPayload, [
+            'title' => $this->description ? $this->description : $this->name,
+            'siteId' => $this->cms_site_id,
+            'triggerType' => $manual ? 'manual' : 'schedule',
+            'triggerRef' => 'cms_agent:'.$this->id,
+            'dedupKey' => $this->jobDedupKey,
+            'overlapPolicy' => 'skip',
+        ]);
     }
 
     /**
