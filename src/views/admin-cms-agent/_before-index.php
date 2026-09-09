@@ -11,18 +11,6 @@ $backend = \yii\helpers\Url::to(['load']);
 $backendStop = \yii\helpers\Url::to(['stop-executable']);
 /*print_r(\Yii::$app->cmsAgent->commands);die;*/
 $this->registerJs(<<<JS
-
-setInterval(function()  {
-    var jContainter = $('.tab-content').closest("[data-pjax-container]").attr("id");
-    jQuery.pjax.reload("#" + jContainter, {});
-}, 15000)
-
-JS
-    ,
-    \yii\web\View::POS_END
-);
-
-$this->registerJs(<<<JS
 (function(sx, $, _)
 {
     sx.classes.LoadAgents = sx.classes.Component.extend({
