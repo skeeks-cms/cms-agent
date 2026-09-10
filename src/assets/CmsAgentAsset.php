@@ -17,4 +17,5 @@ use skeeks\cms\base\AssetBundle;
 class CmsAgentAsset extends AssetBundle
 {
     public $sourcePath = '@skeeks/cms/agent/assets';
+    public $js = ['agent-index.js'];
 }

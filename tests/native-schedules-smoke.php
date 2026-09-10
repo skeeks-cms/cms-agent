@@ -114,4 +114,25 @@ $check(!$broken->validate(), 'Cannot reactivate without runtime');
 $broken->executionMode = '';
 $broken->name = 'forged';
 $check(!$broken->validate(), 'Empty mode cannot bypass system protection');
+$controller = (new ReflectionClass(\skeeks\cms\agent\controllers\AdminCmsAgentController::class))->newInstanceWithoutConstructor();
+$now = 2000000000;
+CmsAgentModel::deleteAll();
+$check($controller->scheduleHealth($now)['state'] === 'default', 'Empty schedules do not imply health');
+$insertSchedule = function ($site, $active, $next) use ($app) {
+    $app->db->createCommand()->insert('cms_agent', [
+        'name' => 'fixture', 'cms_site_id' => $site, 'is_active' => $active, 'next_exec_at' => $next,
+    ])->execute();
+    return $app->db->getLastInsertID();
+};
+$insertSchedule(2, 1, $now - 600);
+$insertSchedule(1, 0, $now - 600);
+$check($controller->scheduleHealth($now)['state'] === 'default', 'Other sites and disabled agents excluded');
+$scheduleId = $insertSchedule(1, 1, $now - 60);
+$check($controller->scheduleHealth($now)['state'] === 'success', 'Exactly sixty seconds is not overdue');
+CmsAgentModel::updateAll(['next_exec_at' => $now - 61], ['id' => $scheduleId]);
+$check($controller->scheduleHealth($now)['state'] === 'warning', 'Sixty-one seconds warns without cms-job');
+CmsAgentModel::updateAll(['next_exec_at' => $now + 60], ['id' => $scheduleId]);
+$check($controller->scheduleHealth($now)['state'] === 'success', 'Future execution is healthy');
+CmsAgentModel::updateAll(['next_exec_at' => null], ['id' => $scheduleId]);
+$check($controller->scheduleHealth($now)['state'] === 'warning', 'Missing dates do not imply health');
 echo "PASS: {$checks} native schedule checks (SQLite in memory)\n";

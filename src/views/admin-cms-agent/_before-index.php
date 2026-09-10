@@ -7,6 +7,9 @@
  */
 /* @var $this yii\web\View */
 
+\skeeks\cms\agent\assets\CmsAgentAsset::register($this);
+$health = $this->context->scheduleHealth();
+
 $backend = \yii\helpers\Url::to(['load']);
 $backendStop = \yii\helpers\Url::to(['stop-executable']);
 /*print_r(\Yii::$app->cmsAgent->commands);die;*/
@@ -99,6 +102,11 @@ JS
 
 
 
+
+<div class="alert alert-<?= $health['state'] ?>" role="status">
+    <strong><?= \yii\helpers\Html::encode($health['title']) ?></strong>
+    <div><?= \yii\helpers\Html::encode($health['description']) ?></div>
+</div>
 
 <div class="alert alert-default">
     <div class="row">

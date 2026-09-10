@@ -24,7 +24,7 @@
 <? else: ?>
     <? $alert = \yii\bootstrap\Alert::begin([
         'options' => [
-            'class' => 'alert-success',
+            'class' => 'alert-default',
         ],
     ]) ?>
 
@@ -34,4 +34,3 @@
     <b>* * * * * cd <?= ROOT_DIR; ?> && php yii cmsAgent/execute > /dev/null 2>&1</b>
     <? $alert::end(); ?>
 <? endif; ?>
-

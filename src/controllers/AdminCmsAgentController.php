@@ -160,7 +160,6 @@ class AdminCmsAgentController extends BackendModelStandartController
                         'custom',
                         'job',
 
-                        'last_exec_at',
                         'next_exec_at',
 
                         'agent_interval',
@@ -178,6 +177,7 @@ class AdminCmsAgentController extends BackendModelStandartController
                         ],
                         'job' => [
                             'label' => 'Запуск', 'format' => 'raw',
+                            'contentOptions' => ['data-sx-agent-job' => ''],
                             'value' => function (CmsAgentModel $model) {
                                 if (!$model->isJobBased) { return 'Прямой запуск по расписанию'; }
                                 return $this->renderJobButton($model);
@@ -187,10 +187,15 @@ class AdminCmsAgentController extends BackendModelStandartController
                             'class' => BooleanColumn::class,
                         ],
                         'is_system'    => [
-                            'class' => BooleanColumn::class,
-                        ],
-                        'last_exec_at' => [
-                            'class' => DateTimeColumnData::class,
+                            'attribute' => 'is_system',
+                            'label' => 'Системный',
+                            'format' => 'raw',
+                            'value' => function (CmsAgentModel $model) {
+                                return $model->is_system ? Html::tag('span',
+                                    \skeeks\cms\backend\helpers\BackendIcon::render('lock', [
+                                        'size' => 16, 'aria-label' => 'Системный агент: параметры заданы пакетом',
+                                    ]), ['title' => 'Системный агент: параметры заданы пакетом']) : '';
+                            },
                         ],
                         'next_exec_at' => [
                             'class' => DateTimeColumnData::class,
@@ -274,6 +279,30 @@ class AdminCmsAgentController extends BackendModelStandartController
         }
 
         return $actions;
+    }
+
+    /** Schedule freshness is evidence about dispatch, not worker health. */
+    public function scheduleHealth(?int $now = null): array
+    {
+        $now = $now ?? time();
+        $query = CmsAgentModel::find()->andWhere([
+            'cms_site_id' => \Yii::$app->skeeks->site->id, 'is_active' => 1,
+        ]);
+        if (!(clone $query)->exists()) {
+            return ['state' => 'default', 'title' => 'Нет активных агентов',
+                'description' => 'Проверить работу расписания пока невозможно.'];
+        }
+        $overdue = (int)(clone $query)->andWhere(['<', 'next_exec_at', $now - 60])->count();
+        if ($overdue) {
+            return ['state' => 'warning', 'title' => 'Агенты запускаются с задержкой',
+                'description' => 'Просрочен следующий запуск более чем на минуту: '.$overdue.'. Возможно, cron не работает. Проверьте запуск расписания.'];
+        }
+        if ((clone $query)->andWhere(['next_exec_at' => null])->exists()) {
+            return ['state' => 'warning', 'title' => 'Не у всех агентов задан следующий запуск',
+                'description' => 'Проверьте даты запуска активных агентов: оценить работу расписания полностью невозможно.'];
+        }
+        return ['state' => 'success', 'title' => 'Расписание без задержек',
+            'description' => 'Нет активных агентов с просрочкой более минуты. Результат выполнения смотрите в статусе задания.'];
     }
 
     public function renderInterval(CmsAgentModel $model): string
