@@ -83,21 +83,18 @@ JS
 
 
 
-<?= \skeeks\cms\backend\widgets\BackendSectionHeader::widget([
-    'title' => 'Расписание',
-    'description' => 'Расписание запуска процессов, команд, скриптов и фоновых заданий. Здесь можно настроить периодичность и проверить состояние запусков.',
-]); ?>
-
+<?php if ($health['state'] !== 'success'): ?>
 <div class="alert alert-<?= $health['state'] ?>" role="status">
     <strong><?= \yii\helpers\Html::encode($health['title']) ?></strong>
     <div><?= \yii\helpers\Html::encode($health['description']) ?></div>
 </div>
+<?php endif; ?>
 
 <?= \skeeks\cms\backend\widgets\BackendSurfaceWidget::widget([
     'responsive' => true,
     'options' => ['class' => 'sx-agent-config-summary'],
     'title' => $changeCount ? $changeSummary : '',
-    'hint' => 'Результат запуска соответствует статусу в таблице. Результаты прямых команд не сохраняются. «Не запущены» не означает, что расписание отключено.',
+    'hint' => 'Расписание запуска процессов, команд, скриптов и фоновых заданий. Здесь можно настроить периодичность и проверить состояние запусков.',
     'actions' => $changeCount ? \yii\helpers\Html::button($loadLabel, [
         'class' => 'sx-button sx-button--secondary sx-btn-make',
         'title' => $changeSummary,
