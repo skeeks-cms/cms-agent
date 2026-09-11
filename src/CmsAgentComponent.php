@@ -75,67 +75,91 @@ class CmsAgentComponent extends Component implements BootstrapInterface
         }
     }
 
-    /**
-     * /**
-     * @return $this
-     */
-    public function loadAgents()
+    /** Compare only fields owned by configuration; never write during page rendering. */
+    public function getScheduleChanges(): array
     {
         $this->initConfigs();
-
         $schedules = $this->commands;
         foreach ($this->jobs as $code => $job) { $schedules['job:'.$code] = $job; }
-        if ($schedules) {
-            $siteId = \Yii::$app->skeeks->site ? \Yii::$app->skeeks->site->id : null;
-            $transaction = \Yii::$app->db->beginTransaction();
-            try {
-            /**
-             * @var CmsAgent $command
-             */
-            foreach ($schedules as $key => $command) {
-                $native = strpos($key, 'job:') === 0;
-                $name = $native ? $key : $command->command;
-                $agent = CmsAgentModel::find()->where(['name' => $name, 'cms_site_id' => $siteId])->one();
-                if ($agent) {
-                    //Будет обновлен
-                } else {
-                    $agent = new CmsAgentModel();
-                    $agent->name = $name;
-                    $agent->cms_site_id = $siteId;
-                }
-                $agent->scenario = CmsAgentModel::SCENARIO_CONFIG;
-                
-                $agent->agent_interval = $command->interval;
-                $agent->is_period = (int) $command->is_period;
-                $agent->description = $command->name;
-                $agent->is_system = 1;
-                if ($native) {
-                    $agent->job_type = $command->jobType;
-                    $agent->setJobPayload($command->jobPayload);
-                }
-                if (!$agent->save()) {
-                    throw new Exception(print_r($agent->errors, true));
-                }
-            }
-
-            //Удалить лишние агенты
-            //Поиск системных агентов, которые есть в базе но больше нет в файлах.
-
-            if ($agents = CmsAgentModel::find()->where(['not in', 'name', array_keys($schedules)])->andWhere(['is_system' => 1, 'cms_site_id' => $siteId])->all()) {
-                foreach ($agents as $agent)
-                {
-                    $agent->delete();
+        $changes = ['create' => [], 'update' => [], 'delete' => []];
+        // Preserve the loader's historical no-op for an entirely empty configuration.
+        if (!$schedules) { return $changes; }
+        $siteId = Yii::$app->skeeks->site ? Yii::$app->skeeks->site->id : null;
+        $existing = CmsAgentModel::find()->where(['cms_site_id' => $siteId])->all();
+        $byName = [];
+        foreach ($existing as $agent) { $byName[$agent->name] = $byName[$agent->name] ?? $agent; }
+        $configuredNames = [];
+        foreach ($schedules as $key => $command) {
+            $native = strpos($key, 'job:') === 0;
+            $name = $native ? $key : $command->command;
+            $configuredNames[] = $name;
+            $agent = isset($byName[$name]) ? clone $byName[$name] : new CmsAgentModel();
+            $agent->scenario = CmsAgentModel::SCENARIO_CONFIG;
+            $agent->name = $name;
+            $agent->cms_site_id = $siteId;
+            $attributes = [
+                'agent_interval' => $command->interval,
+                'is_period' => (int)$command->is_period,
+                'description' => $command->name,
+                'is_system' => 1,
+            ];
+            if ($native) {
+                $attributes['job_type'] = $command->jobType;
+                $agent->setJobPayload($command->jobPayload);
+                $attributes['job_payload'] = $agent->job_payload;
+                // JSON formatting and object-key order alone are not a configuration change.
+                if (!$agent->isNewRecord) {
+                    try {
+                        $oldPayload = clone $byName[$name];
+                        if ($this->normalizePayload($oldPayload->jobPayload) === $this->normalizePayload($command->jobPayload)) {
+                            $attributes['job_payload'] = $oldPayload->job_payload;
+                        }
+                    } catch (\InvalidArgumentException $e) { /* Invalid stored JSON needs repair. */ }
                 }
             }
-            $transaction->commit();
-            } catch (\Throwable $error) {
-                $transaction->rollBack();
-                throw $error;
+            $changed = false;
+            foreach ($attributes as $attribute => $value) {
+                if ((string)$agent->getOldAttribute($attribute) !== (string)$value) { $changed = true; }
+                $agent->$attribute = $value;
+            }
+            if ($agent->isNewRecord) { $changes['create'][] = $agent; }
+            elseif ($changed) { $changes['update'][] = $agent; }
+        }
+        foreach ($existing as $agent) {
+            if ($agent->is_system && !in_array($agent->name, $configuredNames, true)) {
+                $changes['delete'][] = $agent;
             }
         }
+        return $changes;
+    }
 
+    private function normalizePayload(array $payload): array
+    {
+        foreach ($payload as &$value) {
+            if (is_array($value)) { $value = $this->normalizePayload($value); }
+        }
+        unset($value);
+        if ($payload && array_keys($payload) !== range(0, count($payload) - 1)) { ksort($payload); }
+        return $payload;
+    }
 
-
+    /** Synchronize the same differences shown in the administration, recalculated at execution. */
+    public function loadAgents()
+    {
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            $changes = $this->getScheduleChanges();
+            foreach (array_merge($changes['create'], $changes['update']) as $agent) {
+                if (!$agent->save()) { throw new Exception(print_r($agent->errors, true)); }
+            }
+            foreach ($changes['delete'] as $agent) {
+                if ($agent->delete() === false) { throw new Exception('Не удалось удалить устаревшее расписание.'); }
+            }
+            $transaction->commit();
+        } catch (\Throwable $error) {
+            $transaction->rollBack();
+            throw $error;
+        }
         return $this;
     }
 

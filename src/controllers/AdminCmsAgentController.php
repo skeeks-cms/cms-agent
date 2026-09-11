@@ -40,7 +40,7 @@ class AdminCmsAgentController extends BackendModelStandartController
 {
     public function init()
     {
-        $this->name = \Yii::t('skeeks/agent', 'Agents');
+        $this->name = \Yii::t('skeeks/agent', 'Schedule');
         $this->modelShowAttribute = 'displayName';
         $this->modelClassName = CmsAgentModel::class;
 
@@ -55,6 +55,7 @@ class AdminCmsAgentController extends BackendModelStandartController
      */
     public function actions()
     {
+        $scheduleFilters = new \skeeks\cms\agent\helpers\ScheduleFilters();
         $actions = ArrayHelper::merge(parent::actions(), [
 
             'view' => [
@@ -65,6 +66,7 @@ class AdminCmsAgentController extends BackendModelStandartController
             ],
 
             "index" => [
+                'configKey' => $this->uniqueId.'/index/schedule-v2',
                 'on beforeRender' => function (ViewRenderEvent $event) {
 
                     $event->content = $this->renderPartial("_before-index");
@@ -75,20 +77,50 @@ class AdminCmsAgentController extends BackendModelStandartController
                 "filters"         => [
                     'visibleFilters' => [
                         'q',
+                        'execution_mode',
+                        'execution_result',
+                        'execution_state',
                         'is_system',
                     ],
 
                     'filtersModel' => [
                         'rules' => [
-                            ['q', 'safe'],
+                            [['q', 'execution_mode', 'execution_result', 'execution_state'], 'safe'],
                         ],
 
                         'attributeDefines' => [
                             'q',
+                            'execution_mode',
+                            'execution_result',
+                            'execution_state',
                         ],
 
 
                         'fields' => [
+                            'execution_mode' => [
+                                'class' => SelectField::class,
+                                'label' => 'Способ запуска',
+                                'items' => ['console' => 'Прямой запуск', 'job' => 'Через очередь'],
+                                'on apply' => function (QueryFiltersEvent $e) use ($scheduleFilters) {
+                                    $scheduleFilters->apply($e->dataProvider->query, 'execution_mode', $e->field->value);
+                                },
+                            ],
+                            'execution_result' => [
+                                'class' => SelectField::class,
+                                'label' => 'Результат запуска',
+                                'items' => ['error' => 'Есть ошибки', 'warning' => 'С предупреждениями', 'success' => 'Успешно', 'cancelled' => 'Отменено', 'unknown' => 'Нет результата'],
+                                'on apply' => function (QueryFiltersEvent $e) use ($scheduleFilters) {
+                                    $scheduleFilters->apply($e->dataProvider->query, 'execution_result', $e->field->value);
+                                },
+                            ],
+                            'execution_state' => [
+                                'class' => SelectField::class,
+                                'label' => 'Сейчас',
+                                'items' => ['running' => 'Выполняются', 'queued' => 'В очереди', 'idle' => 'Не запущены', 'unknown' => 'Состояние недоступно'],
+                                'on apply' => function (QueryFiltersEvent $e) use ($scheduleFilters) {
+                                    $scheduleFilters->apply($e->dataProvider->query, 'execution_state', $e->field->value);
+                                },
+                            ],
                             'is_system' => [
                                 'class' => BoolField::class,
                                 'formElement' => BoolField::ELEMENT_LISTBOX,
@@ -289,20 +321,20 @@ class AdminCmsAgentController extends BackendModelStandartController
             'cms_site_id' => \Yii::$app->skeeks->site->id, 'is_active' => 1,
         ]);
         if (!(clone $query)->exists()) {
-            return ['state' => 'default', 'title' => 'Нет активных агентов',
+            return ['state' => 'default', 'title' => 'Нет активных расписаний',
                 'description' => 'Проверить работу расписания пока невозможно.'];
         }
         $overdue = (int)(clone $query)->andWhere(['<', 'next_exec_at', $now - 60])->count();
         if ($overdue) {
-            return ['state' => 'warning', 'title' => 'Агенты запускаются с задержкой',
+            return ['state' => 'warning', 'title' => 'Запуски по расписанию задерживаются',
                 'description' => 'Просрочен следующий запуск более чем на минуту: '.$overdue.'. Возможно, cron не работает. Проверьте запуск расписания.'];
         }
         if ((clone $query)->andWhere(['next_exec_at' => null])->exists()) {
-            return ['state' => 'warning', 'title' => 'Не у всех агентов задан следующий запуск',
-                'description' => 'Проверьте даты запуска активных агентов: оценить работу расписания полностью невозможно.'];
+            return ['state' => 'warning', 'title' => 'Не у всех расписаний задан следующий запуск',
+                'description' => 'Проверьте даты запуска активных расписаний: оценить работу расписания полностью невозможно.'];
         }
         return ['state' => 'success', 'title' => 'Расписание без задержек',
-            'description' => 'Нет активных агентов с просрочкой более минуты. Результат выполнения смотрите в статусе задания.'];
+            'description' => 'Нет активных расписаний с просрочкой более минуты. Результат выполнения смотрите в статусе задания.'];
     }
 
     public function renderInterval(CmsAgentModel $model): string
@@ -490,7 +522,7 @@ JS
         $rr = new RequestResponse();
         if ($rr->isRequestAjaxPost()) {
             \Yii::$app->cmsAgent->loadAgents();
-            $rr->message = \Yii::t('skeeks/agent', 'Agents have been updated successfully');
+            $rr->message = 'Расписания успешно обновлены';
             $rr->success = true;
             return $rr;
         }

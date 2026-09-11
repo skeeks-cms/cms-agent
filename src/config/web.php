@@ -14,7 +14,7 @@ return [
                     'settings' => [
                         'items' => [
                             [
-                                "name"  => ['skeeks/agent', "Agents"],
+                                "name"  => ['skeeks/agent', "Schedule"],
                                 "url"   => ["cmsAgent/admin-cms-agent"],
                                 "image" => ['\skeeks\cms\assets\CmsAsset', 'images/icons/admin-menu/agent.svg'],
                             ],

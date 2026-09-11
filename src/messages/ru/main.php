@@ -2,6 +2,7 @@
 return [
     'Activate' => 'Активировать',
     'Agents' => 'Агенты',
+    'Schedule' => 'Расписание',
     'Deactivate' => 'Деактивировать',
     'Executing' => 'Исполнение',
     'Agents enabled on the hits' => 'Включено исполнение агентов на хитах',

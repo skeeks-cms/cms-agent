@@ -9,9 +9,17 @@
 
 \skeeks\cms\agent\assets\CmsAgentAsset::register($this);
 $health = $this->context->scheduleHealth();
+$changes = \Yii::$app->cmsAgent->getScheduleChanges();
+$createCount = count($changes['create']);
+$updateCount = count($changes['update']);
+$deleteCount = count($changes['delete']);
+$changeCount = $createCount + $updateCount + $deleteCount;
+$loadLabel = ($updateCount || $deleteCount ? 'Обновить расписания' : 'Загрузить расписания').' · '.$changeCount;
+$changeSummary = 'Новых: '.$createCount.', изменённых: '.$updateCount.', устаревших к удалению: '.$deleteCount.'.';
+$this->registerCss('.sx-agent-config-summary { margin-bottom: 20px; }');
 
 $backend = \yii\helpers\Url::to(['load']);
-$backendStop = \yii\helpers\Url::to(['stop-executable']);
+
 /*print_r(\Yii::$app->cmsAgent->commands);die;*/
 $this->registerJs(<<<JS
 (function(sx, $, _)
@@ -28,11 +36,7 @@ $this->registerJs(<<<JS
                 return false;
             });
 
-            $(".sx-btn-stop-executable").on('click', function()
-            {
-                self.stop();
-                return false;
-            });
+
         },
 
         make: function()
@@ -62,36 +66,12 @@ $this->registerJs(<<<JS
             });
 
             ajax.execute();
-        },
-
-        stop: function()
-        {
-            var ajax = sx.ajax.preparePostQuery(this.get("backendStop"));
-            var rr = new sx.classes.AjaxHandlerStandartRespose(ajax);
-
-            rr.bind('error', function(e, data)
-            {
-                //$.pjax.reload('#sx-agents', {});
-                return false;
-            });
-
-            rr.bind('success', function(e, data)
-            {
-                //$.pjax.reload('#sx-agents', {});
-                _.delay(function() {
-                    window.location.reload();
-                }, 1000);
-                return false;
-            });
-
-            ajax.execute();
         }
     });
 
 
     new sx.classes.LoadAgents({
-        'backend' : '{$backend}',
-        'backendStop' : '{$backendStop}'
+        'backend' : '{$backend}'
     });
 
 })(sx, sx.$, sx._);
@@ -103,32 +83,23 @@ JS
 
 
 
+<?= \skeeks\cms\backend\widgets\BackendSectionHeader::widget([
+    'title' => 'Расписание',
+    'description' => 'Расписание запуска процессов, команд, скриптов и фоновых заданий. Здесь можно настроить периодичность и проверить состояние запусков.',
+]); ?>
+
 <div class="alert alert-<?= $health['state'] ?>" role="status">
     <strong><?= \yii\helpers\Html::encode($health['title']) ?></strong>
     <div><?= \yii\helpers\Html::encode($health['description']) ?></div>
 </div>
 
-<div class="alert alert-default">
-    <div class="row">
-    <div class="col-md-12">
-        <div class="pull-left">
-            <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-stop\"></i> ".\Yii::t('skeeks/agent',
-                    'Stop running'), "#", [
-                'class' => 'btn btn-primary sx-btn-stop-executable',
-            ]); ?>
-        </div>
-
-
-        <div class="pull-right">
-            <?= \yii\helpers\Html::a("<i class=\"glyphicon glyphicon-retweet\"></i> ".\Yii::t('skeeks/agent',
-                    'Загрузить агенты'), "#", [
-                'class' => 'btn btn-primary sx-btn-make',
-            ]); ?>
-            <span class="sx-legend">
-                    <?= \Yii::t('skeeks/agent', 'Found agents'); ?> <span
-                        class="sx-green"><?= count(\Yii::$app->cmsAgent->commands) + count(\Yii::$app->cmsAgent->jobs); ?></span>
-                </span>
-        </div>
-    </div>
-    </div>
-</div>
+<?= \skeeks\cms\backend\widgets\BackendSurfaceWidget::widget([
+    'responsive' => true,
+    'options' => ['class' => 'sx-agent-config-summary'],
+    'title' => $changeCount ? $changeSummary : '',
+    'hint' => 'Результат запуска соответствует статусу в таблице. Результаты прямых команд не сохраняются. «Не запущены» не означает, что расписание отключено.',
+    'actions' => $changeCount ? \yii\helpers\Html::button($loadLabel, [
+        'class' => 'sx-button sx-button--secondary sx-btn-make',
+        'title' => $changeSummary,
+    ]) : '',
+]); ?>
