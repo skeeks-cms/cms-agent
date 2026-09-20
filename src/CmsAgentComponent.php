@@ -88,11 +88,9 @@ class CmsAgentComponent extends Component implements BootstrapInterface
         $existing = CmsAgentModel::find()->where(['cms_site_id' => $siteId])->all();
         $byName = [];
         foreach ($existing as $agent) { $byName[$agent->name] = $byName[$agent->name] ?? $agent; }
-        $configuredNames = [];
         foreach ($schedules as $key => $command) {
             $native = strpos($key, 'job:') === 0;
             $name = $native ? $key : $command->command;
-            $configuredNames[] = $name;
             $agent = isset($byName[$name]) ? clone $byName[$name] : new CmsAgentModel();
             $agent->scenario = CmsAgentModel::SCENARIO_CONFIG;
             $agent->name = $name;
@@ -125,11 +123,7 @@ class CmsAgentComponent extends Component implements BootstrapInterface
             if ($agent->isNewRecord) { $changes['create'][] = $agent; }
             elseif ($changed) { $changes['update'][] = $agent; }
         }
-        foreach ($existing as $agent) {
-            if ($agent->is_system && !in_array($agent->name, $configuredNames, true)) {
-                $changes['delete'][] = $agent;
-            }
-        }
+        // Missing configuration is not permission to delete a persisted schedule.
         return $changes;
     }
 
@@ -151,9 +145,6 @@ class CmsAgentComponent extends Component implements BootstrapInterface
             $changes = $this->getScheduleChanges();
             foreach (array_merge($changes['create'], $changes['update']) as $agent) {
                 if (!$agent->save()) { throw new Exception(print_r($agent->errors, true)); }
-            }
-            foreach ($changes['delete'] as $agent) {
-                if ($agent->delete() === false) { throw new Exception('Не удалось удалить устаревшее расписание.'); }
             }
             $transaction->commit();
         } catch (\Throwable $error) {

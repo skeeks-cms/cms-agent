@@ -105,7 +105,10 @@ $check(count($app->cmsAgent->scheduleChanges['update']) === 1, 'Payload scalar t
 $app->cmsAgent->jobs['native-daily']->jobPayload = ['site_id' => 123];
 $oldCommands = $app->cmsAgent->commands;
 $app->cmsAgent->commands = [];
-$check(count($app->cmsAgent->scheduleChanges['delete']) === 1, 'Removed configuration reports obsolete system schedule');
+$check(count($app->cmsAgent->scheduleChanges['delete']) === 0, 'Removed configuration never proposes deletion');
+$preserved = CmsAgentModel::findOne(['name' => 'test/legacy'])->getAttributes();
+$app->cmsAgent->loadAgents()->loadAgents();
+$check(CmsAgentModel::findOne(['name' => 'test/legacy'])->getAttributes() === $preserved, 'Repeated loading preserves unconfigured system schedule unchanged');
 $app->cmsAgent->commands = $oldCommands;
 $check(CmsAgentModel::findOne(['name' => 'job:native-daily'])->agent_interval == 300, 'Config may update system fields');
 $app->skeeks->site = (object)['id' => 2];

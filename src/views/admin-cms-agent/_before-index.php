@@ -12,10 +12,9 @@ $health = $this->context->scheduleHealth();
 $changes = \Yii::$app->cmsAgent->getScheduleChanges();
 $createCount = count($changes['create']);
 $updateCount = count($changes['update']);
-$deleteCount = count($changes['delete']);
-$changeCount = $createCount + $updateCount + $deleteCount;
-$loadLabel = ($updateCount || $deleteCount ? 'Обновить расписания' : 'Загрузить расписания').' · '.$changeCount;
-$changeSummary = 'Новых: '.$createCount.', изменённых: '.$updateCount.', устаревших к удалению: '.$deleteCount.'.';
+$changeCount = $createCount + $updateCount;
+$loadLabel = ($updateCount ? 'Обновить расписания' : 'Загрузить расписания').' · '.$changeCount;
+$changeSummary = 'Новых: '.$createCount.', изменённых: '.$updateCount.'.';
 $this->registerCss('.sx-agent-config-summary { margin-bottom: 20px; }');
 
 $backend = \yii\helpers\Url::to(['load']);
