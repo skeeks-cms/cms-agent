@@ -391,6 +391,11 @@ class AdminCmsAgentController extends BackendModelStandartController
 
         if ($model->isNewRecord && !\Yii::$app->request->isPost && \Yii::$app->has('jobs')) {
             $model->executionMode = 'job';
+            $type = (string)\Yii::$app->request->get('job_type', '');
+            if (\Yii::$app->jobs->getRegistry()->has($type)) {
+                $model->job_type = $type;
+                $model->jobTargetId = \Yii::$app->request->get('jobTargetId', '');
+            }
         }
         $types = [];
         if (\Yii::$app->has('jobs')) {
@@ -403,6 +408,25 @@ class AdminCmsAgentController extends BackendModelStandartController
         if ($model->job_type && !isset($types[$model->job_type])) {
             $types[$model->job_type] = $model->job_type.' — недоступен';
         }
+        $targets = [];
+        foreach ($types as $type => $title) {
+            $registry = \Yii::$app->jobs->getRegistry();
+            if (!$registry->has($type)) { continue; }
+            $definition = $registry->get($type);
+            if ($definition->permission && !\Yii::$app->user->can($definition->permission)) { continue; }
+            $provider = \Yii::$app->cmsAgent->getJobTargetProvider($type);
+            if ($provider) {
+                $targets[$type] = ['label' => $provider->label(), 'items' => $provider->items((int)\Yii::$app->skeeks->site->id)];
+                $types[$type] = \Yii::$app->jobs->getRegistry()->get($type)->title;
+            }
+        }
+        if ($model->isNewRecord && !\Yii::$app->request->isPost && !$model->name) {
+            $model->name = $targets[$model->job_type]['items'][$model->jobTargetId] ?? '';
+        }
+        $targetConfig = \yii\helpers\Json::htmlEncode($targets);
+        $typeId = \yii\helpers\Json::encode(Html::getInputId($model, 'job_type'));
+        $targetId = \yii\helpers\Json::encode(Html::getInputId($model, 'jobTargetId'));
+        $payloadId = \yii\helpers\Json::encode(Html::getInputId($model, 'job_payload'));
         $modeId = \yii\helpers\Json::encode(Html::getInputId($model, 'executionMode'));
         // Fields live in the current standard form, including when opened in a drawer.
         $this->view->registerJs(<<<JS
@@ -412,15 +436,41 @@ class AdminCmsAgentController extends BackendModelStandartController
     mode.dataset.sxAgentBound = '1';
     var form = mode.closest('form');
     if (!form) return;
+    var targets = $targetConfig;
+    var type = document.getElementById($typeId);
+    var target = document.getElementById($targetId);
+    var payload = document.getElementById($payloadId);
+    var previousType = null;
     function update() {
         var job = mode.value === 'job';
         form.querySelectorAll('[data-sx-agent-job-field]').forEach(function (field) { field.hidden = !job; });
+        var config = type && targets[type.value];
+        var targetField = form.querySelector('[data-sx-agent-target-field]');
+        if (targetField) targetField.hidden = !job || !config;
+        if (target && config && previousType !== type.value) {
+            var selected = previousType === null ? target.value : '';
+            target.replaceChildren(new Option('Выберите настройку', ''));
+            Object.keys(config.items).forEach(function (id) { target.add(new Option(config.items[id], id)); });
+            target.value = selected;
+            var targetLabel = form.querySelector('label[for="' + target.id + '"]');
+            if (targetLabel) targetLabel.textContent = config.label;
+            jQuery(target).trigger('chosen:updated').trigger('change.select2');
+        }
+        previousType = type ? type.value : null;
+        var payloadField = form.querySelector('[data-sx-agent-payload-field]');
+        if (payloadField) payloadField.hidden = !job || !!config;
+        if (payload) payload.disabled = !!config || mode.disabled;
         var label = form.querySelector('[data-sx-agent-name-label]');
         if (label) label.textContent = job ? 'Название расписания' : 'Консольная команда';
         var hint = form.querySelector('[data-sx-agent-name-hint]');
         if (hint) hint.textContent = job ? 'Понятное название этого расписания.' : 'Маршрут консольной команды, при необходимости с аргументами. Без php yii.';
     }
     jQuery(mode).on('change.cmsAgent', update);
+    if (type) jQuery(type).on('change.cmsAgent', update);
+    if (target) jQuery(target).on('change.cmsAgent', function () {
+        var name = form.querySelector('[data-sx-agent-schedule-name]');
+        if (name && !name.value && target.value) name.value = target.options[target.selectedIndex].text;
+    });
     update();
 })();
 JS
@@ -456,12 +506,24 @@ JS
                 'items' => $types,
                 'elementOptions' => $options,
                 'options' => ['options' => ['class' => 'form-group', 'data-sx-agent-job-field' => true]],
-                'hint' => 'Очередь указана в квадратных скобках и определяется типом задания.',
+                'hint' => 'Выберите операцию, которая будет запускаться по расписанию.',
+            ],
+            'jobTargetId' => [
+                'class' => WidgetField::class,
+                'label' => $targets[$model->job_type]['label'] ?? 'Настройка операции',
+                'widgetClass' => \kartik\select2\Select2::class,
+                'widgetConfig' => [
+                    'data' => ['' => ''] + ($targets[$model->job_type]['items'] ?? []),
+                    'options' => array_merge(['placeholder' => 'Выберите настройку'], $options),
+                    'pluginOptions' => ['allowClear' => true, 'width' => '100%'],
+                ],
+                'options' => ['options' => ['class' => 'form-group', 'data-sx-agent-target-field' => true]],
+                'hint' => 'Сохранённая настройка текущего сайта. Работа выполняется сервером, даже если закрыть браузер.',
             ],
             'job_payload' => [
                 'class' => TextareaField::class,
                 'elementOptions' => $payloadOptions,
-                'options' => ['options' => ['class' => 'form-group', 'data-sx-agent-job-field' => true]],
+                'options' => ['options' => ['class' => 'form-group', 'data-sx-agent-job-field' => true, 'data-sx-agent-payload-field' => true]],
                 'hint' => 'JSON-объект с параметрами обработчика. Если параметры не нужны, оставьте поле пустым. Параметры системного задания смотрите в карточке.',
             ],
             'next_exec_at' => [
@@ -482,7 +544,7 @@ JS
                 'labelOptions' => ['data-sx-agent-name-label' => true],
                 'hint' => 'Понятное название расписания или маршрут консольной команды.',
                 'hintOptions' => ['data-sx-agent-name-hint' => true],
-                'elementOptions' => $options
+                'elementOptions' => array_merge($options, ['data-sx-agent-schedule-name' => true])
             ],
 
             'description' => [

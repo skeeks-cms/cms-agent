@@ -37,6 +37,34 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
 {
     const SCENARIO_CONFIG = 'config';
     private $_executionMode;
+    private $_jobTargetId;
+
+    public function getJobTargetId()
+    {
+        if ($this->_jobTargetId !== null) { return $this->_jobTargetId; }
+        $provider = Yii::$app->cmsAgent->getJobTargetProvider($this->effectiveJobType);
+        try { return $provider ? $provider->selected($this->effectiveJobPayload) : null; }
+        catch (\InvalidArgumentException $error) { return null; }
+    }
+
+    public function setJobTargetId($value) { $this->_jobTargetId = $value; }
+
+    public function validateJobTarget($attribute)
+    {
+        if ($this->executionMode !== 'job' || $this->isDisablingUnchangedJob()) { return; }
+        $provider = Yii::$app->cmsAgent->getJobTargetProvider($this->effectiveJobType);
+        if (!$provider) { return; }
+        try {
+            $siteId = (int)($this->cms_site_id ?: Yii::$app->skeeks->site->id);
+            if (Yii::$app instanceof \yii\web\Application && $siteId !== (int)Yii::$app->skeeks->site->id) {
+                throw new \InvalidArgumentException('Расписание другого сайта недоступно.');
+            }
+            $payload = $provider->payload((string)$this->jobTargetId, $siteId);
+            if (!$this->is_system) { $this->setJobPayload($payload); }
+        } catch (\InvalidArgumentException $error) {
+            $this->addError($attribute, $error->getMessage());
+        }
+    }
 
     public function scenarios()
     {
@@ -92,6 +120,7 @@ class CmsAgentModel extends \skeeks\cms\base\ActiveRecord
     public function rules()
     {
         return [
+            ['jobTargetId', 'validateJobTarget', 'skipOnEmpty' => false],
             ['executionMode', 'in', 'range' => ['console', 'job'], 'skipOnEmpty' => false],
             ['executionMode', 'validateExecutionMode', 'skipOnEmpty' => false],
             [['last_exec_at', 'next_exec_at', 'agent_interval', 'priority', 'is_system'], 'integer'],

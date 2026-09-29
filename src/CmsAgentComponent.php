@@ -54,6 +54,19 @@ class CmsAgentComponent extends Component implements BootstrapInterface
     /** Native job schedules keyed by a stable schedule code, not a console route. */
     public $jobs = [];
 
+    /** Job type => domain selection provider; optional, no dependency on consumers. */
+    public $jobTargets = [];
+
+    public function getJobTargetProvider($type): ?JobTargetProviderInterface
+    {
+        if (!isset($this->jobTargets[$type])) { return null; }
+        $provider = Yii::createObject($this->jobTargets[$type]);
+        if (!$provider instanceof JobTargetProviderInterface) {
+            throw new \yii\base\InvalidConfigException('Invalid schedule target provider.');
+        }
+        return $provider;
+    }
+
 
     public function bootstrap($application)
     {
