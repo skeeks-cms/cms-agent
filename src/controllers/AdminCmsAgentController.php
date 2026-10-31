@@ -9,6 +9,7 @@
 namespace skeeks\cms\agent\controllers;
 
 use kartik\datecontrol\DateControl;
+use skeeks\cms\widgets\formInputs\datetime\DateTimeInputWidget;
 use skeeks\cms\actions\backend\BackendModelMultiActivateAction;
 use skeeks\cms\actions\backend\BackendModelMultiDeactivateAction;
 use skeeks\cms\agent\models\CmsAgentModel;
@@ -528,7 +529,8 @@ JS
             ],
             'next_exec_at' => [
                 'class'        => WidgetField::class,
-                'widgetClass'  => DateControl::class,
+                // The platform date field; an older skeeks/cms without it keeps DateControl.
+                'widgetClass'  => class_exists(DateTimeInputWidget::class) ? DateTimeInputWidget::class : DateControl::class,
                 'widgetConfig' => [
                     'type' => DateControl::FORMAT_DATETIME,
                 ],
